@@ -19,10 +19,6 @@ html, body {
 	font-family: Verdana, Geneva, sans-serif;
 }
 
-.row.inline-block > *{
-	display: inline-block; float: none; vertical-align: top;
-}
-
 .text-center {
 	text-align: center
 }
@@ -46,7 +42,6 @@ iframe {
 }
 
 .indice {
-	text-align: center;
 	min-height: 40px;
 }
 
@@ -75,35 +70,30 @@ iframe {
 	display: block;
 }
 
-.row{
-	background: #fff;
-    border: 1px solid #d0d0d0;
-}
-.indice div {
+.indice span {
+	padding: 0px 20px;
+	color: black;
+	border: 1px solid #d0d0d0;
 	line-height: 25px;
+	display: inline-block;
 	margin: 1px;
+	background: #FFF;
 	font-size: 13px;
 }
 
-.indice div a {
+.indice span a {
 	text-decoration: none;
-	color: #000;
+    color: #0073aa;
 	font-weight: bold;
 }
 
-.indice div a:hover {
+.indice span a:hover {
 	color: #00437d;
 }
-
-.box-shadow {
-	box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0
-		rgba(0, 0, 0, 0.19);
-}
-
 </style>
 <body>
-	<div class="container-fluid">
-		<div class="row inline-block box-shadow  ">
+	<div class="container">
+		<div class="row">
 			<div id="indice" class="indice">$(indice)</div>
 		</div>
 		<div id="fixed-indice" class="fixed-indice">

@@ -21,10 +21,10 @@ public class PageGenerator implements Generator {
     private ReleaseType releaseType;
 
     private enum ReleaseType {
-        RELEASE("(?<=Release_).*(RC\\d*)+(?=.html)"),
-        MASTER("(?<=Release_)((?!SP|RC).)*(?=.html)"),
-        PATCH("(?<=Release_).*(SP\\d*)+(?=.html)"),
-        ALL("(?<=Release_).*(?=.html)");
+        RELEASE("(?<=ReleaseNotes_).*(RC\\d*)+(?=.html)"),
+        MASTER("(?<=ReleaseNotes_)((?!SP|RC).)*(?=.html)"),
+        PATCH("(?<=ReleaseNotes_).*(SP\\d*)+(?=.html)"),
+        ALL("(?<=ReleaseNotes_).*(?=.html)");
 
         private final Pattern PATTERN_VERSION;
 
@@ -77,7 +77,7 @@ public class PageGenerator implements Generator {
                 Matcher matcher = releaseType.getPatternVersion().matcher(fileName);
                 if (matcher.find()) {
                     String version = matcher.group();
-                    span.append("<div class='col-lg-1 col-sm-2 col-xs-3'>").append("<a href='").append(fileName).append("'>").append(version).append("</a>").append("</div>");
+                    span.append("<span>").append("<a href='").append(fileName).append("'>").append(version).append("</a>").append("</span>");
                     option.append("<option value='").append(fileName).append("'>").append(version).append("</option>");
                     iframe.append("<div>").append("<iframe id='").append(version).append("' src='").append(fileName).append("'>").append("</iframe>").append("</div>");
                 }
