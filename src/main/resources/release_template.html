@@ -102,12 +102,8 @@ a:hover, a:focus, a:visited, a:link {
 	text-decoration: none;
 }
 </style>
-<script>
-{{#tags}}
-var tagVersion =  "{{name}}";
-{{/tags}}
-</script>
-<body onload="sendMessage();">
+
+<body>
 	<div class="container box-shadow">
 		<h1 id="title" align="center">Release notes - </h1>
 		<div class="row">
@@ -188,6 +184,18 @@ var tagVersion =  "{{name}}";
 				<div id="tecnical-items"></div>
 			</div>
 		</div>
+		<div id="oldCommit" class="row" style="display:none;">
+			<div class="col-sm-3 text-title">
+				<div class="center-block"></div>
+				<div>
+					<img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABkAAAAZCAMAAADzN3VRAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAyBpVFh0WE1MOmNvbS5hZG9iZS54bXAAAAAAADw/eHBhY2tldCBiZWdpbj0i77u/IiBpZD0iVzVNME1wQ2VoaUh6cmVTek5UY3prYzlkIj8+IDx4OnhtcG1ldGEgeG1sbnM6eD0iYWRvYmU6bnM6bWV0YS8iIHg6eG1wdGs9IkFkb2JlIFhNUCBDb3JlIDUuMC1jMDYwIDYxLjEzNDc3NywgMjAxMC8wMi8xMi0xNzozMjowMCAgICAgICAgIj4gPHJkZjpSREYgeG1sbnM6cmRmPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5LzAyLzIyLXJkZi1zeW50YXgtbnMjIj4gPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9IiIgeG1sbnM6eG1wPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvIiB4bWxuczp4bXBNTT0iaHR0cDovL25zLmFkb2JlLmNvbS94YXAvMS4wL21tLyIgeG1sbnM6c3RSZWY9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9zVHlwZS9SZXNvdXJjZVJlZiMiIHhtcDpDcmVhdG9yVG9vbD0iQWRvYmUgUGhvdG9zaG9wIENTNSBXaW5kb3dzIiB4bXBNTTpJbnN0YW5jZUlEPSJ4bXAuaWlkOjhDOEUyNTM1NDM0MTExRThCQUExRDEyOTA3RTQ3MTMxIiB4bXBNTTpEb2N1bWVudElEPSJ4bXAuZGlkOjhDOEUyNTM2NDM0MTExRThCQUExRDEyOTA3RTQ3MTMxIj4gPHhtcE1NOkRlcml2ZWRGcm9tIHN0UmVmOmluc3RhbmNlSUQ9InhtcC5paWQ6OEM4RTI1MzM0MzQxMTFFOEJBQTFEMTI5MDdFNDcxMzEiIHN0UmVmOmRvY3VtZW50SUQ9InhtcC5kaWQ6OEM4RTI1MzQ0MzQxMTFFOEJBQTFEMTI5MDdFNDcxMzEiLz4gPC9yZGY6RGVzY3JpcHRpb24+IDwvcmRmOlJERj4gPC94OnhtcG1ldGE+IDw/eHBhY2tldCBlbmQ9InIiPz7fmkGkAAAAMFBMVEWGhoZ1dXXd3d21tbUSEhLKysr7+/ugoKBnZ2fAwMA7OztYWFgoKCjy8vIAAAD////HpwAcAAAAEHRSTlP///////////////////8A4CNdGQAAALFJREFUeNp00FkWgCAIBVA1nABh/7vNY2Zaxp/dE8MzOlewvaKqmcFZ6QV+FSuc4SJexQjHLviWUf/CO2FEZtrJoaE9NISXAINpAvaG1PbyPmfXRLo4vGaPBgp8tCvx3op8FxSoKaWRC/UmRrm+8nMJKMW7m6zlxhz8lWCXv6gMWeJ6lm5S0gM5zKIl9mHXaZPUAOrnhEK6Eyqe+Su+HZ7gK1liHU2ymQNSc4wwtTsFGACich+r48eXQwAAAABJRU5ErkJggg==" />
+					<span title="Commits antigos e/ou despadronizados">Não categorizado</span>
+				</div>
+			</div>
+			<div class="col-sm-9">
+				<div id="oldcommits-items"></div>
+			</div>
+		</div>
 		<div class="row">
 			<div class="col-sm-1 text-title">
 				<div>
@@ -210,8 +218,20 @@ var tagVersion =  "{{name}}";
 		</div>
 	</div>
 <input id="repoName" type="hidden" value="{{repoName}}">
-	<script>
+{{#commits}} 
+<input name="fullMessage" type="hidden" value="{{message}}">
+<input name="messageTitle" type="hidden" value="{{{messageTitle}}}">
+<input name="author" type="hidden" value="{{authorName}}">
+<input name="hash" type="hidden" value="{{hash}}">
+	{{#messageBodyItems}}
+		<input name="message_{{hash}}" type="hidden" value="{{.}}">
+	{{/messageBodyItems}}
+{{/commits}}
+<script>
 
+{{#tags}}
+var tagVersion =  "{{name}}";
+{{/tags}}
 //CRIANDO ARRAYS
 var summary = [];
 var devs = [];
@@ -221,74 +241,87 @@ var changed = [];
 var tecnicalInfo = [];
 var demands = [];
 var tasks = [];
+var dinossaur = [];
 var commitPosition = 0;
 var repoName = document.getElementById("repoName").value;
+var commits = document.getElementsByName("fullMessage");
+var messageTitle = document.getElementsByName("messageTitle");
+var author= document.getElementsByName("author");
+var hash= document.getElementsByName("hash");
+var commitPosition = 0;
+
 document.getElementById("commit-version").innerHTML = tagVersion;
- 
- {{#commits}} 
-	commitPosition++;
-	console.info('Iniciando leitura de commit');
-	addItem(summary, '{{{messageTitle}}}');
-	addItem(devs, '{{authorName}}');
-	var arrayType = [];
-	var addItemList = true;
-	
-	if(commitPosition === 1){		
-		var repo = repoName.replace(/(?:\\\\svox-back01\\VoxAge_Back01\\GIT\\DSS\\).+?\\.*?\\/gi,"");	
-		var title = repoName.substr(repoName.lastIndexOf('\\') + 1);
-		document.getElementById("gitblit-link").href = document.getElementById("gitblit-link").href+ "/"+repo + "/{{hash}}";
-		document.getElementById("title").innerHTML = document.getElementById("title").innerHTML+ title; 
+	for(var i = 0; 	i < commits.length; i++){
+		console.info('Iniciando leitura de commit');
+		var fullMessage = commits[i].value;
+		if(!ignoreCommit(fullMessage)){
+			commitPosition++;
+			addItem(summary, messageTitle[i].value);
+			addItem(devs, author[i].value);	
+			var arrayType = dinossaur;
+			var addItemList = true;
+			if(commitPosition === 1){		
+				var repo = repoName.replace(/(?:\\\\svox-back01\\VoxAge_Back01\\GIT\\DSS\\).+?\\.*?\\/gi,"");	
+				var title = repoName.substr(repoName.lastIndexOf('\\') + 1);
+				document.getElementById("gitblit-link").href = document.getElementById("gitblit-link").href+ repo + "/${GIT_COMMIT}";
+				document.getElementById("title").innerHTML = document.getElementById("title").innerHTML+ title; 
+			}
+			
+			var messageLines = document.getElementsByName("message_"+hash[i].value);
+			for(var j = 0; 	j < messageLines.length; j++){
+				evaluateCommit(messageLines[j].value);
+			}
+		}
+		console.info('Finalizando leitura de commit');
 	}
-	
-	{{#messageBodyItems}}			
-		var text = '{{.}}'.trim();		
-		if(text == '@[Corrigido]'){
-			arrayType = fixed;
-			addItemList = false;
-		}else if(text == '@[Novo]'){
-			arrayType = newFeature;
-			addItemList = false;
-		}else if(text == '@[Alterado]'){
-			arrayType = changed;
-			addItemList = false;
-		}else if(text == '@[Informações técnicas]'){
-			arrayType = tecnicalInfo;
-			addItemList = false;
-		}else if(text == '@[Demandas]'){
-			arrayType = demands;
-			addItemList = false;
-		}else if(text == '@[Tarefa]'){
-			arrayType = tasks;
-			addItemList = false;
-		}else if(text.indexOf('@[Quebra')  !== -1){
-			addItemList = false;
-			var quebraTag = text.match(/@\[Quebra.*\]/g)[0];
-			var str = quebraTag.match(/\((S|N)\)/gi)[0];
-			var quebraStr =str.substring(1, str.length - 1).toLowerCase();
-			if(quebraStr == 's'){
-				document.getElementById("possibleBreak").style.display = "inline";
-			}
-		}
-		else{
-			addItemList = true;
-			if(text.indexOf('@[Mantis')  !== -1){
-				var mantisTag = text.match(/@\[Mantis.*\]/g)[0];
-				var str = mantisTag.match(/\(\d*\)/g)[0];
-				var number =str.substring(1, str.length - 1);
-				var url = 'http://svox-teste03/mantis/view.php?id=' + number;
-				text = generateLink(url, 'Mantis-'+ number) + text.replace(mantisTag, "");
-			}
-		}
 
-		if(addItemList){
-			addItem(arrayType, text);
-		}
-	
-	{{/messageBodyItems}}
-	
-	console.info('Finalizando leitura de commit');
 
-{{/commits}}
+
+//////////////////////
+function evaluateCommit(text){
+	if(text == '@[Corrigido]'){
+		arrayType = fixed;
+		addItemList = false;
+	}else if(text == '@[Novo]'){
+		arrayType = newFeature;
+		addItemList = false;
+	}else if(text == '@[Alterado]'){
+		arrayType = changed;
+		addItemList = false;
+	}else if(text == '@[Informações técnicas]'){
+		arrayType = tecnicalInfo;
+		addItemList = false;
+	}else if(text == '@[Demandas]'){
+		arrayType = demands;
+		addItemList = false;
+	}else if(text == '@[Tarefa]'){
+		arrayType = tasks;
+		addItemList = false;
+	}else if(text.indexOf('@[Quebra')  !== -1){
+		addItemList = false;
+		var quebraTag = text.match(/@\[Quebra.*\]/g)[0];
+		var str = quebraTag.match(/\((S|N)\)/gi)[0];
+		var quebraStr =str.substring(1, str.length - 1).toLowerCase();
+		if(quebraStr == 's'){
+			document.getElementById("possibleBreak").style.display = "inline";
+		}
+	}
+	else{
+		addItemList = true;
+		if(text.indexOf('@[Mantis')  !== -1){
+			var mantisTag = text.match(/@\[Mantis.*\]/g)[0];
+			var str = mantisTag.match(/\(\d*\)/g)[0];
+			var number =str.substring(1, str.length - 1);
+			var url = 'http://svox-teste03/mantis/view.php?id=' + number;
+			text = generateLink(url, 'Mantis-'+ number) + text.replace(mantisTag, "");
+		}
+	}
+
+	if(addItemList){
+		addItem(arrayType, text);
+	}
+}
+
 
 //GERANDO HTML
 generateList(summary, document.getElementById('summary-items'));
@@ -299,10 +332,19 @@ generateList(changed, document.getElementById('changed-items'));
 generateList(tecnicalInfo, document.getElementById('tecnical-items'));
 generateItem(demands, document.getElementById('demand-items'));
 generateItem(tasks, document.getElementById('tasks-items'));
-	
+
+if(dinossaur.length > 0){
+	document.getElementById('oldCommit').style.display = 'block';
+	generateList(dinossaur, document.getElementById('oldcommits-items'));
+}
 	
 
 //FUNÇÕES 
+function ignoreCommit(fullCommitMessage){
+	return fullCommitMessage.indexOf('@[ReleaseIgnore]') !== -1;
+}
+
+
 function addItem(array, item){
 	if(array.indexOf(item) === -1){
 		array.push(item);
@@ -354,6 +396,9 @@ function sendMessage() {
 				"iframeId": tagVersion,
 				"size": idealHeight
 				}
+		console.info("Mensagem enviada ++++");
+		console.info(message);
+		console.info("++++");
 		parent.postMessage(message, '*');
 	}, timeout);
 }
@@ -381,7 +426,14 @@ jQuery(document).ready(function(){
     	jQuery("#tecnical-info .fa-sticker-mule").hide();
         clearTimeout(timer);
     });	
+
+	
+    
 });
+
+window.onload = function(){ sendMessage(); };
+
+
 
 
 </script>

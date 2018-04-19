@@ -110,6 +110,9 @@ iframe {
 	var messageEvent = eventMethod == "attachEvent" ? "onmessage" : "message";
 	eventer(messageEvent,function(e) {
 		var obj = e.data;
+		console.info("Mensagem recebida ----");
+		console.info(obj);
+		console.info("----");
 		if (obj.idMessage ==='iframe'){ 			 
 			document.getElementById(obj.iframeId).style.height = obj.size + 'px';
 		}

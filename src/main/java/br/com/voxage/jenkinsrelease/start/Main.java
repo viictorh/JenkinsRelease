@@ -2,9 +2,10 @@ package br.com.voxage.jenkinsrelease.start;
 
 import java.io.IOException;
 
-import br.com.voxage.service.Generator;
-import br.com.voxage.service.PageGenerator;
-import br.com.voxage.util.ReadResource;
+import br.com.voxage.jenkinsrelease.constant.Type;
+import br.com.voxage.jenkinsrelease.service.Generator;
+import br.com.voxage.jenkinsrelease.service.PageGenerator;
+import br.com.voxage.jenkinsrelease.util.ReadResource;
 
 /**
  * 
@@ -28,8 +29,14 @@ public class Main {
             throw new IllegalArgumentException(sb.toString());
         } else if ("PRINT".equals(args[0])) {
             return () -> System.out.println(ReadResource.read("release_template.html"));
-        } else if (args.length == 2) {
-            return new PageGenerator(args[0], args[1]);
+        } else if (args.length == 3) {
+            Type type = Type.valueOf(args[1]);
+            if (type == null) {
+                System.out.println("Type (segundo parametro), não identificado. Ele deve ter o valor 'TAG' ou 'BRANCH'");
+                return new PageGenerator(args[0]);
+            } else {
+                return new PageGenerator(args[0], type.releaseType(args[2]));
+            }
         } else {
             return new PageGenerator(args[0]);
         }

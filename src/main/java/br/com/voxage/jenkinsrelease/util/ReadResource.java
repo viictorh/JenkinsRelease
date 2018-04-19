@@ -1,4 +1,4 @@
-package br.com.voxage.util;
+package br.com.voxage.jenkinsrelease.util;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
