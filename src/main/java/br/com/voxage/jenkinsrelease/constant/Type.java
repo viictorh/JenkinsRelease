@@ -2,6 +2,11 @@ package br.com.voxage.jenkinsrelease.constant;
 
 import java.util.regex.Pattern;
 
+/**
+ * 
+ * @author victor.bello
+ *
+ */
 public enum Type implements ReleaseIdentifier {
     BRANCH {
         @Override
