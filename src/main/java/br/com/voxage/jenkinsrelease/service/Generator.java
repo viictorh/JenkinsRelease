@@ -1,4 +1,4 @@
-package br.com.voxage.service;
+package br.com.voxage.jenkinsrelease.service;
 
 /**
  * 
