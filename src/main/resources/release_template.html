@@ -228,10 +228,8 @@ a:hover, a:focus, a:visited, a:link {
 	{{/messageBodyItems}}
 {{/commits}}
 <script>
+var tagVersion =  "${GIT_TAG_NAME}";
 
-{{#tags}}
-var tagVersion =  "{{name}}";
-{{/tags}}
 //CRIANDO ARRAYS
 var summary = [];
 var devs = [];
