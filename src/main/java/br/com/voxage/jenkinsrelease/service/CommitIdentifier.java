@@ -33,7 +33,12 @@ public class CommitIdentifier implements Generator {
     @Override
     public void process() throws Exception {
         String result = CommandPrompt.executeCommand("cd " + workspace + " && " + TAG_NAME_CMD);
+        System.out.println("Tag identificada: " + result);
+        System.out.println("cd " + workspace + " && " + TAG_HASH_CMD + result);
         result = CommandPrompt.executeCommand("cd " + workspace + " && " + TAG_HASH_CMD + result);
+        System.out.println("hash: " + result);
+        String lines[] = result.split("\\r?\\n");
+        result = lines[0];
         if (!GIT_HASH.matcher(result).matches()) {
             result = CommandPrompt.executeCommand("cd " + workspace + " && " + FIRST_COMMIT);
         }
