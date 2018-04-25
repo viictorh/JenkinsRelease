@@ -37,8 +37,10 @@ public class CommandPrompt {
         BufferedReader r = createProcess(cmd);
         String line;
         StringBuilder builder = new StringBuilder();
+        String lineSeparator = "";
         while ((line = r.readLine()) != null) {
-            builder.append(line);
+            builder.append(lineSeparator).append(line);
+            lineSeparator = System.lineSeparator();
         }
         return builder.toString();
     }
