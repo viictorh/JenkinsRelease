@@ -7,6 +7,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.Arrays;
 import java.util.regex.Matcher;
 
 import br.com.voxage.jenkinsrelease.constant.Type.ReleaseType;
@@ -37,6 +38,7 @@ public class PageGenerator implements Generator {
     public void process() throws IOException {
         final FilenameFilter filter = (dir, name) -> dir.isDirectory() && name.toLowerCase().endsWith(".html");
         String[] list = filePath.list(filter);
+        Arrays.sort(list, (f1, f2) -> f2.compareToIgnoreCase(f1));
         if (list != null && list.length > 0) {
 
             StringBuilder span = new StringBuilder();

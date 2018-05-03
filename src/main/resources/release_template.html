@@ -101,6 +101,12 @@ a {
 a:hover, a:focus, a:visited, a:link {
 	text-decoration: none;
 }
+
+.item-description {
+    display: block;
+    margin-left: 15px;
+} 
+
 </style>
 
 <body>
@@ -322,18 +328,18 @@ function evaluateCommit(text){
 
 
 //GERANDO HTML
-generateList(summary, document.getElementById('summary-items'));
-generateItem(devs, document.getElementById('dev-names'));
-generateList(fixed, document.getElementById('fixed-items'));
-generateList(newFeature, document.getElementById('new-items'));
-generateList(changed, document.getElementById('changed-items'));
-generateList(tecnicalInfo, document.getElementById('tecnical-items'));
-generateItem(demands, document.getElementById('demand-items'));
-generateItem(tasks, document.getElementById('tasks-items'));
+generateList(summary, document.getElementById('summary-items'), true);
+generateItem(devs, document.getElementById('dev-names'), false);
+generateList(fixed, document.getElementById('fixed-items'), false);
+generateList(newFeature, document.getElementById('new-items'), false);
+generateList(changed, document.getElementById('changed-items'), false);
+generateList(tecnicalInfo, document.getElementById('tecnical-items'), false);
+generateItem(demands, document.getElementById('demand-items'), false);
+generateItem(tasks, document.getElementById('tasks-items'), false);
 
 if(dinossaur.length > 0){
 	document.getElementById('oldCommit').style.display = 'block';
-	generateList(dinossaur, document.getElementById('oldcommits-items'));
+	generateList(dinossaur, document.getElementById('oldcommits-items'), false);
 }
 	
 
@@ -344,6 +350,10 @@ function ignoreCommit(fullCommitMessage){
 
 
 function addItem(array, item){
+	if(item.indexOf('N/A')  !== -1){
+		item = item.replace(/^\s*(\*|-|\.)\s*/g,"");
+	}
+	
 	if(array.indexOf(item) === -1){
 		array.push(item);
 	}
@@ -354,17 +364,24 @@ function addItem(array, item){
 	}
 }
 
-function generateList( array,  location){
+function generateList( array,  location, addBullets){
 	 var ul = document.createElement('ul');	
 	 for(var i=0;i<array.length;i++)
 	 {
-	     var li=document.createElement('li');
-	     if(array[i].indexOf('/mantis/view.php')  !== -1){
-		     li.innerHTML = array[i];
+		 var txt = array[i];
+	     var element=document.createElement('li');
+	     if(txt.indexOf('/mantis/view.php')  !== -1){
+	    	 element.innerHTML = txt;
 		 }else{
-		     li.appendChild(document.createTextNode(array[i]));
+			 var regex = /^\s*(\*|-|\.)\s*/g; 
+			 if(i != 0 && !addBullets && !regex.test(txt)){
+				 element=document.createElement('span');
+				 element.className='item-description';
+			 }
+			 txt = txt.replace(regex,"");
+			 element.appendChild(document.createTextNode(txt));
 		 }
-	     ul.appendChild(li);
+	     ul.appendChild(element);
 	 }
 	 location.appendChild(ul); 
 }
@@ -372,7 +389,7 @@ function generateList( array,  location){
 function generateItem( array,  location){	
 	 for(var i=0;i<array.length;i++){
 		 var span=document.createElement('span');
-		 span.setAttribute("class", i === array.length-1 ? "multi-item-line" : "multi-item-line pipe-border")
+		 span.className = i === array.length-1 ? "multi-item-line" : "multi-item-line pipe-border";
 	     span.appendChild(document.createTextNode(array[i]));
 		 location.appendChild(span);		
 	 }
