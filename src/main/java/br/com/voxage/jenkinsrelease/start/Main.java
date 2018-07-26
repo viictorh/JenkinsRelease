@@ -22,7 +22,7 @@ public class Main {
     private static Generator proccessArgs(String[] args) throws IOException {
         StringBuilder sb = new StringBuilder();
         if (args.length == 0) {
-            sb.append("Execute este jar de uma das duas maneiras abaixo: ").append(System.lineSeparator());
+            sb.append("Execute este jar de uma das 3 maneiras abaixo: ").append(System.lineSeparator());
             sb.append("1 - Para gerar a tag inicial do commit: java -jar JenkinsRelease.jar \"COMMIT\" \"<caminho workspace>\"").append(System.lineSeparator());
             sb.append("2 - Para visualizar o template dos release notes: java -jar JenkinsRelease.jar \"PRINT\"").append(System.lineSeparator());
             sb.append("3 - Para criar a pagina principal com indices e todos os release: java -jar JenkinsRelease.jar <caminho dos release notes> <branch> ").append(System.lineSeparator());
