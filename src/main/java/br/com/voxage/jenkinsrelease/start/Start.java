@@ -14,6 +14,5 @@ public class Start {
         } else {
             ReleaseGenerator.INSTANCE.start(args[0], args[1]);
         }
-
     }
 }

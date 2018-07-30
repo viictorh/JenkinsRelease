@@ -1,26 +1,39 @@
 package br.com.voxage.jenkinsrelease.service;
 
+import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
+import java.util.Map.Entry;
+import java.util.Set;
 
 import br.com.voxage.jenkinsrelease.bean.Commit;
+import br.com.voxage.jenkinsrelease.bean.Release;
+import br.com.voxage.jenkinsrelease.constant.BlockType;
+import br.com.voxage.jenkinsrelease.util.CommitReader;
+import br.com.voxage.jenkinsrelease.util.ReadResource;
 
 public enum ReleaseGenerator {
     INSTANCE;
-    GitService gitService;
+    private static final DateTimeFormatter RELEASE_DATE_PATTERN = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss");
+    private static final String            MANTIS_URL           = "http://svox-teste03/mantis/view.php?id={0}";
+    GitService                             gitService;
 
     public void start(String workspace, String tag) throws IOException {
         gitService = new GitService(workspace);
+        LocalDateTime tagDate = gitService.findTagDate(tag);
         String commit = gitService.findHashFromTag(tag);
-        String endCommit = findStartCommit(commit);
-        List<String> hashes = findCommitHashes(commit, endCommit);
-        List<Commit> commits = findCommitMessages(hashes);
-        processMessages(commits);
+        String endCommit = findEndCommit(commit);
+        List<Commit> commits = findCommitMessages(commit, endCommit);
+        Release release = new CommitReader(commits).read();
+        generateFile(workspace, tagDate, tag, commit, release);
     }
 
-    private String findStartCommit(String commit) throws IOException {
+    private String findEndCommit(String commit) throws IOException {
         String previousTag = gitService.findPreviousTagFromHash(commit);
         String previousHash = gitService.findHashFromTag(previousTag);
         String lines[] = previousHash.split("\\r?\\n");
@@ -31,12 +44,8 @@ public enum ReleaseGenerator {
         return previousHash;
     }
 
-    private List<String> findCommitHashes(String commit, String endCommit) throws IOException {
-        String[] findHashesBetween = gitService.findHashesBetween(commit, endCommit).split(System.lineSeparator());
-        return Arrays.asList(findHashesBetween);
-    }
-
-    private List<Commit> findCommitMessages(List<String> hashes) throws IOException {
+    private List<Commit> findCommitMessages(String startCommit, String endCommit) throws IOException {
+        String[] hashes = gitService.findHashesBetween(startCommit, endCommit).split(System.lineSeparator());
         List<Commit> commits = new ArrayList<>();
         for (String hash : hashes) {
             gitService.findCommitMessage(hash).ifPresent(c -> commits.add(c));
@@ -44,54 +53,32 @@ public enum ReleaseGenerator {
         return commits;
     }
 
-    private void processMessages(List<Commit> commits) {
-        int corrigido, novo, alterado, info, demanda, tarefa;
-        List<Integer> items = new ArrayList<>();
-        for (Commit commit : commits) {
-            String message = commit.getMessage();
-            corrigido = message.indexOf("@[Corrigido]");
-            novo = message.indexOf("@[Novo]");
-            alterado = message.indexOf("@[Alterado]");
-            info = message.indexOf("@[Informações técnicas]");
-            demanda = message.indexOf("@[Demandas]");
-            tarefa = message.indexOf("@[Tarefa]");
-            items = Arrays.asList(corrigido, novo, alterado, info, demanda, tarefa);
-            items.sort((a, b) -> a.compareTo(b));
-            if (corrigido == -1) {
-                System.out.println(message);
-                continue;
+    private void generateFile(String workspace, LocalDateTime tagDate, String tag, String tagHash, Release release) throws IOException {
+        String projectName = workspace.substring(workspace.lastIndexOf("\\") + 1);
+        String fileContent = ReadResource.read("release_template.html").replace("@[TagDate]", tagDate.format(RELEASE_DATE_PATTERN));
+        fileContent = fileContent.replace("@[Compatibility]", release.isCompatibilityBreak() ? "" : "none").replace("@[Tag]", tag).replace("@[TagHash]", tagHash);
+        fileContent = fileContent.replace("@[Old]", release.isOld() ? "" : "none").replace("@[Project]", projectName);
+        StringBuilder sb = new StringBuilder();
+        for (Entry<BlockType, Set<String>> entry : release.getBlockCommits().entrySet()) {
+            Set<String> set = release.getBlockCommits().get(entry.getKey());
+            if (BlockType.HtmlType.LIST == entry.getKey().getHtmlType()) {
+                sb.append("<ul>");
+                for (String item : set) {
+                    sb.append("<li>").append(item).append("</li>");
+                }
+                sb.append("</ul>");
+            } else {
+                for (String item : set) {
+                    sb.append("<span class='multi-item-line pipe-border'>").append(item).append("</span>");
+                }
             }
-            // validate when -1
-            String corrigidoBlock = message.substring(corrigido, findNext(items, corrigido, message.length())).replace("@[Corrigido]", "");
-            String novoBlock = message.substring(novo, findNext(items, novo, message.length())).replace("@[Novo]", "");
-            String alteradoBlock = message.substring(alterado, findNext(items, alterado, message.length())).replace("@[Alterado]", "");
-            String infoBlock = message.substring(info, findNext(items, info, message.length())).replace("@[Informações técnicas]", "");
-            String demandaBlock = message.substring(demanda, findNext(items, demanda, message.length())).replace("@[Demandas]", "");
-            String tarefaBlock = message.substring(tarefa, findNext(items, tarefa, message.length())).replace("@[Tarefa]", "");
-            message = message.replace(corrigidoBlock, "");
-            message = message.replace(novoBlock, "");
-            message = message.replace(alteradoBlock, "");
-            message = message.replace(infoBlock, "");
-            message = message.replace(demandaBlock, "");
-            message = message.replace(tarefaBlock, "");
-            System.out.println("MESSAGE: -- " + message);
-            // DEPOIS DE PEGAR CADA BLOCO, REALIZO UM REPLACE E O QUE SOBRAR JOGO NO "nÃO IDENTIFICADO/DINOSSAURO"
-
-            System.out.println("Corrigido: " + corrigidoBlock);
-            System.out.println("Novo: " + novoBlock);
-            System.out.println(alteradoBlock);
-            System.out.println(infoBlock);
-            System.out.println(demandaBlock);
-            System.out.println(tarefaBlock);
+            fileContent = fileContent.replace(entry.getKey().getBlockName(), sb.toString());
+            sb = new StringBuilder();
         }
-    }
 
-    private int findNext(List<Integer> items, int current, int length) {
-        int indexOf = items.indexOf(current);
-        if (items.size() == (indexOf + 1)) {
-            return length;
-        }
-        return items.get(indexOf + 1);
+        String filePath = workspace + File.separator + "test.html";
+        Files.write(Paths.get(filePath), fileContent.getBytes());
+        System.out.println("FilePath: " + filePath);
     }
 
 }

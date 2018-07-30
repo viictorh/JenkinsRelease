@@ -25,6 +25,7 @@ public class GitService {
     private static final String            FIRST_COMMIT           = "git rev-list --max-parents=0 HEAD";
     private static final String            HASHES_BETWEEN         = "git rev-list {0} ^^{1}";
     private static final String            COMMIT_MESSAGE         = "git log {0} -n 1";
+    private static final String            TAG_DATE               = " git log -1 --pretty='format:%cd' {0}";
     private String                         command;
     private boolean                        ignoreMerge;
 
@@ -75,6 +76,14 @@ public class GitService {
         String result = CommandPrompt.executeCommand(cmd);
         LOGGER.info("findHashesBetween: - [RESULT]: " + result);
         return result;
+    }
+
+    public LocalDateTime findTagDate(String tag) throws IOException {
+        String cmd = command + MessageFormat.format(TAG_DATE, tag);
+        LOGGER.info("findTagDate: " + cmd);
+        String result = CommandPrompt.executeCommand(cmd);
+        LOGGER.info("findTagDate: - [RESULT]: " + result);
+        return LocalDateTime.parse(result, GIT_DATE_FORMAT);
     }
 
     public Optional<Commit> findCommitMessage(String hash) throws IOException {
