@@ -12,8 +12,14 @@ import java.util.regex.Pattern;
 import org.apache.log4j.Logger;
 
 import br.com.voxage.jenkinsrelease.bean.Commit;
+import br.com.voxage.jenkinsrelease.bean.Settings;
 import br.com.voxage.jenkinsrelease.util.CommandPrompt;
 
+/**
+ * 
+ * @author victor.bello
+ *
+ */
 public class GitService {
     private final static Logger            LOGGER                 = Logger.getLogger(GitService.class);
     private static final DateTimeFormatter GIT_DATE_FORMAT        = DateTimeFormatter.ofPattern("EEE MMM d HH:mm:ss yyyy Z", Locale.ENGLISH);
@@ -29,13 +35,14 @@ public class GitService {
     private String                         command;
     private boolean                        ignoreMerge;
 
-    public GitService(String workspace) {
-        this(workspace, true);
+    public GitService(Settings settings) {
+        this(settings, true);
     }
 
-    public GitService(String workspace, boolean ignoreMerge) {
+    public GitService(Settings settings, boolean ignoreMerge) {
         this.ignoreMerge = ignoreMerge;
-        this.command = "cd " + workspace + " && ";
+        this.command = "cd " + settings.getWorkspace() + " && ";
+        LOGGER.setLevel(settings.getLogLevel());
     }
 
     public String findPreviousTagFromHead() throws IOException {
@@ -87,14 +94,16 @@ public class GitService {
     }
 
     public Optional<Commit> findCommitMessage(String hash) throws IOException {
+        String cmd = command + MessageFormat.format(COMMIT_MESSAGE, hash);
+        LOGGER.info("findCommitMessage: " + cmd);
         int authorLineNum = 1;
         int dateLineNum = 2;
         int titleLineNum = 4;
-        String cmd = command + MessageFormat.format(COMMIT_MESSAGE, hash);
-        LOGGER.info("findCommitMessage: " + cmd);
         String result = CommandPrompt.executeCommand(cmd);
         if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
             LOGGER.debug("findCommitMessage: - [RESULT]: " + result);
+            LOGGER.debug("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
         }
         String[] lines = result.split(System.lineSeparator());
         if (lines.length < 5 || (lines[1].contains("Merge:") && ignoreMerge) || result.contains("@[ReleaseIgnore]")) {
@@ -116,7 +125,9 @@ public class GitService {
         Commit commit = new Commit(hash, authorName, email, LocalDateTime.parse(date, GIT_DATE_FORMAT), titleLine, message);
 
         if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("findCommitMessage: [PARSE] " + commit);
+            LOGGER.debug("**********************************************************************************");
+            LOGGER.debug("findCommitMessage: [RESULT PARSED] " + commit);
+            LOGGER.debug("**********************************************************************************");
         }
         return Optional.of(commit);
     }

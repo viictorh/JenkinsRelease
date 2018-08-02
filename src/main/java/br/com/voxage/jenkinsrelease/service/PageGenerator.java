@@ -18,7 +18,7 @@ import br.com.voxage.jenkinsrelease.util.ReadResource;
  * @author victor.bello
  *
  */
-public class PageGenerator implements Generator {
+public class PageGenerator {
 
     private File        filePath;
     private ReleaseType releaseType;
@@ -34,7 +34,7 @@ public class PageGenerator implements Generator {
         this(fromPath, ReleaseType.ALL);
     }
 
-    @Override
+    
     public void process() throws IOException {
         final FilenameFilter filter = (dir, name) -> dir.isDirectory() && name.toLowerCase().endsWith(".html");
         String[] list = filePath.list(filter);

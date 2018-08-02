@@ -1,5 +1,7 @@
 package br.com.voxage.jenkinsrelease.constant;
 
+import java.util.regex.Pattern;
+
 /**
  * 
  * @author victor.bello
@@ -14,42 +16,40 @@ public enum BlockType {
     NEW("@[Novo]", HtmlType.LIST, true),
     UPDATE("@[Alterado]", HtmlType.LIST, true),
     INFO("@[Informações técnicas]", HtmlType.LIST, true),
-    DEMAND("@[Demandas]", HtmlType.SPAN, true),
-    TASK("@[Tarefa]", HtmlType.SPAN, true),
+    DEMAND("@[Demandas]", HtmlType.SPAN, "\\d*", true),
+    TASK("@[Tarefa]", HtmlType.SPAN, "\\d*", true),
     OLD("@[Mauro]", HtmlType.LIST, false),;
 
     private String   blockName;
     private HtmlType htmlType;
     private boolean  automatic;
+    private Pattern  regexValidation;
 
     private BlockType(String blockName, HtmlType htmlType, boolean automatic) {
+        this(blockName, htmlType, ".*", automatic);
+    }
+
+    private BlockType(String blockName, HtmlType htmlType, String regex, boolean automatic) {
         this.blockName = blockName;
         this.htmlType = htmlType;
         this.automatic = automatic;
+        this.regexValidation = Pattern.compile(regex, Pattern.DOTALL);
     }
 
     public String getBlockName() {
         return blockName;
     }
 
-    public void setBlockName(String blockName) {
-        this.blockName = blockName;
-    }
-
     public HtmlType getHtmlType() {
         return htmlType;
-    }
-
-    public void setHtmlType(HtmlType htmlType) {
-        this.htmlType = htmlType;
     }
 
     public boolean isAutomatic() {
         return automatic;
     }
 
-    public void setAutomatic(boolean automatic) {
-        this.automatic = automatic;
+    public Pattern getRegexValidation() {
+        return regexValidation;
     }
 
     public enum HtmlType {

@@ -13,6 +13,7 @@ import java.util.Set;
 
 import br.com.voxage.jenkinsrelease.bean.Commit;
 import br.com.voxage.jenkinsrelease.bean.Release;
+import br.com.voxage.jenkinsrelease.bean.Settings;
 import br.com.voxage.jenkinsrelease.constant.BlockType;
 import br.com.voxage.jenkinsrelease.util.CommitReader;
 import br.com.voxage.jenkinsrelease.util.ReadResource;
@@ -21,16 +22,18 @@ public enum ReleaseGenerator {
     INSTANCE;
     private static final DateTimeFormatter RELEASE_DATE_PATTERN = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss");
     private static final String            MANTIS_URL           = "http://svox-teste03/mantis/view.php?id={0}";
-    GitService                             gitService;
+    private GitService                     gitService;
+    private Settings                       settings;
 
-    public void start(String workspace, String tag) throws IOException {
-        gitService = new GitService(workspace);
-        LocalDateTime tagDate = gitService.findTagDate(tag);
-        String commit = gitService.findHashFromTag(tag);
-        String endCommit = findEndCommit(commit);
-        List<Commit> commits = findCommitMessages(commit, endCommit);
+    public void start(Settings settings) throws IOException {
+        this.settings = settings;
+        gitService = new GitService(settings);
+        LocalDateTime tagDate = gitService.findTagDate(settings.getTag());
+        String tagHash = gitService.findHashFromTag(settings.getTag());
+        String fromHash = findEndCommit(tagHash);
+        List<Commit> commits = findCommitMessages(tagHash, fromHash);
         Release release = new CommitReader(commits).read();
-        generateFile(workspace, tagDate, tag, commit, release);
+        generateFile(tagDate, tagHash, release);
     }
 
     private String findEndCommit(String commit) throws IOException {
@@ -53,10 +56,10 @@ public enum ReleaseGenerator {
         return commits;
     }
 
-    private void generateFile(String workspace, LocalDateTime tagDate, String tag, String tagHash, Release release) throws IOException {
-        String projectName = workspace.substring(workspace.lastIndexOf("\\") + 1);
+    private void generateFile(LocalDateTime tagDate, String tagHash, Release release) throws IOException {
+        String projectName = settings.getWorkspace().substring(settings.getWorkspace().lastIndexOf("\\") + 1);
         String fileContent = ReadResource.read("release_template.html").replace("@[TagDate]", tagDate.format(RELEASE_DATE_PATTERN));
-        fileContent = fileContent.replace("@[Compatibility]", release.isCompatibilityBreak() ? "" : "none").replace("@[Tag]", tag).replace("@[TagHash]", tagHash);
+        fileContent = fileContent.replace("@[Compatibility]", release.isCompatibilityBreak() ? "" : "none").replace("@[Tag]", settings.getTag()).replace("@[TagHash]", tagHash);
         fileContent = fileContent.replace("@[Old]", release.isOld() ? "" : "none").replace("@[Project]", projectName);
         StringBuilder sb = new StringBuilder();
         for (Entry<BlockType, Set<String>> entry : release.getBlockCommits().entrySet()) {
@@ -76,7 +79,7 @@ public enum ReleaseGenerator {
             sb = new StringBuilder();
         }
 
-        String filePath = workspace + File.separator + "test.html";
+        String filePath = settings.getWorkspace() + File.separator + "test.html";
         Files.write(Paths.get(filePath), fileContent.getBytes());
         System.out.println("FilePath: " + filePath);
     }

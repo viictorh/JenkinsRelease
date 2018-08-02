@@ -81,7 +81,12 @@ public class CommitReader {
                 next = items.get(indexOf + 1).position;
             }
             String blockMessage = message.substring(block.position, next).replace(block.type.getBlockName(), "").trim();
-            LOGGER.debug(blockMessage);
+            // StringBuilder sb = new StringBuilder();
+            // Matcher matcher = block.type.getRegexValidation().matcher(blockMessage);
+            // while (matcher.find()) {
+            // sb.append(matcher.group());
+            // }
+            // LOGGER.debug(sb.toString());
             return blockMessage;
         }
         return "N/A";
