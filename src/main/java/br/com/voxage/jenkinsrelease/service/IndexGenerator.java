@@ -1,11 +1,14 @@
 package br.com.voxage.jenkinsrelease.service;
 
+import static br.com.voxage.jenkinsrelease.util.Log.log;
+
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.regex.Matcher;
@@ -18,29 +21,15 @@ import br.com.voxage.jenkinsrelease.util.ReadResource;
  * @author victor.bello
  *
  */
-public class PageGenerator {
+public enum IndexGenerator {
+    INSTANCE;
 
-    private File        filePath;
-    private ReleaseType releaseType;
-
-    public PageGenerator(String fromPath, ReleaseType releasetype) {
-        this.filePath = new File(fromPath);
-        this.releaseType = releasetype;
-        System.out.println("Caminho: " + fromPath);
-        System.out.println("ReleaseType: " + releaseType);
-    }
-
-    public PageGenerator(String fromPath) {
-        this(fromPath, ReleaseType.ALL);
-    }
-
-    
-    public void process() throws IOException {
+    public void start(String fromPath, ReleaseType releaseType) throws IOException {
         final FilenameFilter filter = (dir, name) -> dir.isDirectory() && name.toLowerCase().endsWith(".html");
+        File filePath = new File(fromPath);
         String[] list = filePath.list(filter);
         Arrays.sort(list, (f1, f2) -> f2.compareToIgnoreCase(f1));
         if (list != null && list.length > 0) {
-
             StringBuilder span = new StringBuilder();
             StringBuilder option = new StringBuilder();
             StringBuilder iframe = new StringBuilder();
@@ -54,11 +43,11 @@ public class PageGenerator {
                     iframe.append("<div>").append("<iframe id='").append(version).append("' src='").append(encodedUrl).append("'>").append("</iframe>").append("</div>");
                 }
             }
-
             String html = ReadResource.read("index.html");
             String format = html.replace("$(indice)", span.toString()).replace("$(fixed-indice)", option.toString()).replace("$(iframes)", iframe.toString());
-            Files.write(Paths.get(filePath + File.separator + "index.html"), format.getBytes());
-
+            Path path = Paths.get(filePath + File.separator + "index.html");
+            Files.write(path, format.getBytes());
+            log.info("Índice criado no caminho: " + path);
         }
     }
 

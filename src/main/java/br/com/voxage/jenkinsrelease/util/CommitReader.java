@@ -1,11 +1,9 @@
 package br.com.voxage.jenkinsrelease.util;
 
 import java.util.ArrayList;
-import java.util.EnumMap;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -19,21 +17,18 @@ public class CommitReader {
 
     private List<Commit>         commits;
     private Release              release;
-    private static final Pattern COMPATIBILITY_PATTERN = Pattern.compile("@\\[Quebra.*\\]");
+    private static final Pattern COMPATIBILITY_PATTERN = Pattern.compile("@\\[Quebra.*\\]", Pattern.CASE_INSENSITIVE);
     private final static Logger  LOGGER                = Logger.getLogger(CommitReader.class);
 
     public CommitReader(List<Commit> commits) {
         this.commits = commits;
-        Map<BlockType, Set<String>> blockCommits = new EnumMap<>(BlockType.class);
-        for (BlockType blockType : BlockType.values()) {
-            blockCommits.put(blockType, new HashSet<>());
-        }
-        release = new Release(blockCommits);
+        release = new Release();
     }
 
     public Release read() {
-        List<Block> items = new ArrayList<>();
+        Set<Block> blockOrder = new TreeSet<>();
         for (Commit commit : commits) {
+            String messageCopy = commit.getMessage();
             String message = commit.getMessage();
             Matcher matcher = COMPATIBILITY_PATTERN.matcher(message);
             if (matcher.find()) {
@@ -42,87 +37,62 @@ public class CommitReader {
                     release.setCompatibilityBreak(true);
                 }
                 message = message.replace(compatibility, "");
+                messageCopy = message;
             }
-
-            release.getBlockCommits().get(BlockType.DEV).add(commit.getAuthorName());
-            release.getBlockCommits().get(BlockType.SUMMARY).add(commit.getTitle());
-
+            release.addBlockMessage(BlockType.DEV, commit.getAuthorName());
+            release.addBlockMessage(BlockType.SUMMARY, commit.getTitle());
             for (BlockType type : BlockType.values()) {
                 if (type.isAutomatic()) {
-                    items.add(new Block(type, message.indexOf(type.getBlockName())));
+                    blockOrder.add(new Block(type, message.indexOf(type.getBlockName())));
                 }
             }
-            items.sort((i1, i2) -> i1.position.compareTo(i2.position));
-            for (Block block : items) {
-                block.message = getText(message, items, block);
-                List<String> blocks = splitLines(block.message);
-                release.getBlockCommits().get(block.type).addAll(blocks);
-            }
-            for (Block block : items) {
-                message = message.replace(block.message, "").replace(block.type.getBlockName(), "");
+
+            for (Block block : blockOrder) {
+                String text = getText(message, new ArrayList<Block>(blockOrder), block);
+                messageCopy = messageCopy.replace(text, "").replace(block.type.getBlockName(), "");
+                release.addBlockMessage(block.type, text);
             }
 
-            if (!message.trim().isEmpty()) {
-                release.getBlockCommits().get(BlockType.OLD).add(message.trim());
-                release.setOld(true);
+            if (!messageCopy.trim().isEmpty()) {
+                release.addBlockMessage(BlockType.OLD, messageCopy.trim());
             }
-            items.clear();
+            blockOrder.clear();
         }
+        LOGGER.trace(release);
         return release;
     }
 
-    private String getText(String message, List<Block> items, Block block) {
+    private String getText(String message, ArrayList<Block> arrayList, Block block) {
         LOGGER.debug(message);
         LOGGER.debug(block);
         if (block.position != -1) {
             int next = message.length();
-            int indexOf = items.indexOf(block);
-            if (items.size() != (indexOf + 1)) {
-                next = items.get(indexOf + 1).position;
+            int indexOf = arrayList.indexOf(block);
+            if (arrayList.size() != (indexOf + 1)) {
+                next = arrayList.get(indexOf + 1).position;
             }
-            String blockMessage = message.substring(block.position, next).replace(block.type.getBlockName(), "").trim();
-            // StringBuilder sb = new StringBuilder();
-            // Matcher matcher = block.type.getRegexValidation().matcher(blockMessage);
-            // while (matcher.find()) {
-            // sb.append(matcher.group());
-            // }
-            // LOGGER.debug(sb.toString());
-            return blockMessage;
+            return message.substring(block.position, next).replace(block.type.getBlockName(), "").trim();
         }
         return "N/A";
     }
 
-    private List<String> splitLines(String message) {
-        List<String> lines = new ArrayList<>();
-        String[] split = message.split("\\n");
-        StringBuilder sb = new StringBuilder();
-
-        for (int i = 0; i < split.length; i++) {
-            String line = split[i].trim();
-            if (i != 0 && line.endsWith(":") && (line.startsWith("@[Mantis(") || line.startsWith("-"))) {
-                lines.add(sb.toString());
-                sb = new StringBuilder();
-            }
-            sb.append(split[i]);
-        }
-        lines.add(sb.toString());
-        return lines;
-    }
-
-    private static class Block {
+    private static class Block implements Comparable<Block> {
         BlockType type;
         Integer   position;
-        String    message;
 
         public Block(BlockType type, int position) {
             this.type = type;
             this.position = position;
-            this.message = "";
         }
 
         @Override
-        public String toString() {
-            return "Block [type=" + type + ", position=" + position + ", message=" + message + "]";
+        public int compareTo(Block o) {
+            int compareTo = this.position.compareTo(o.position);
+            if (compareTo == 0) {
+                return this.type.compareTo(o.type);
+            }
+            return compareTo;
         }
+
     }
 }

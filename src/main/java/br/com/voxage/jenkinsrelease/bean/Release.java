@@ -1,6 +1,6 @@
 package br.com.voxage.jenkinsrelease.bean;
 
-import java.util.Map;
+import java.util.HashSet;
 import java.util.Set;
 
 import br.com.voxage.jenkinsrelease.constant.BlockType;
@@ -11,12 +11,12 @@ import br.com.voxage.jenkinsrelease.constant.BlockType;
  *
  */
 public class Release {
-    private boolean                     compatibilityBreak;
-    private boolean                     old;
-    private Map<BlockType, Set<String>> blockCommits;
+    private boolean           compatibilityBreak;
 
-    public Release(Map<BlockType, Set<String>> blockCommits) {
-        this.blockCommits = blockCommits;
+    private Set<BlockMessage> blockMessages;
+
+    public Release() {
+        blockMessages = new HashSet<>();
     }
 
     public boolean isCompatibilityBreak() {
@@ -27,25 +27,23 @@ public class Release {
         this.compatibilityBreak = compatibilityBreak;
     }
 
-    public Map<BlockType, Set<String>> getBlockCommits() {
-        return blockCommits;
+    public void addBlockMessage(BlockType blockType, String message) {
+        BlockMessage blockMessage = blockMessages.stream().filter(bm -> bm.getBlockType().equals(blockType)).findFirst().orElse(new BlockMessage(blockType));
+        blockMessage.addMessage(message);
+        blockMessages.add(blockMessage);
     }
 
-    public void setBlockCommits(Map<BlockType, Set<String>> blockCommits) {
-        this.blockCommits = blockCommits;
+    public boolean containsUnaddressedCommit() {
+        return blockMessages.stream().anyMatch(bm -> bm.getBlockType().equals(BlockType.OLD));
     }
 
-    public boolean isOld() {
-        return old;
-    }
-
-    public void setOld(boolean old) {
-        this.old = old;
+    public Set<BlockMessage> getBlockMessages() {
+        return blockMessages;
     }
 
     @Override
     public String toString() {
-        return "Release [compatibilityBreak=" + compatibilityBreak + ", blockCommits=" + blockCommits + "]";
+        return "Release [compatibilityBreak=" + compatibilityBreak + ", blockMessages=" + blockMessages + "]";
     }
 
 }

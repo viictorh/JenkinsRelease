@@ -19,7 +19,7 @@ public class Settings {
         this.tag = tag;
         this.fromTag = fromTag;
         if (StringUtils.isBlank(logLevel)) {
-            this.logLevel = Level.ERROR;
+            this.logLevel = Level.INFO;
         } else {
             this.logLevel = Level.toLevel(logLevel.toUpperCase());
         }

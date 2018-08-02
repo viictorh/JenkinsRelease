@@ -1,6 +1,6 @@
 package br.com.voxage.jenkinsrelease.constant;
 
-import java.util.regex.Pattern;
+import java.text.MessageFormat;
 
 /**
  * 
@@ -10,37 +10,31 @@ import java.util.regex.Pattern;
 
 public enum BlockType {
 
-    SUMMARY("@[Resumo]", HtmlType.LIST, false),
-    DEV("@[Desenvolvedores]", HtmlType.SPAN, false),
-    FIX("@[Corrigido]", HtmlType.LIST, true),
-    NEW("@[Novo]", HtmlType.LIST, true),
-    UPDATE("@[Alterado]", HtmlType.LIST, true),
-    INFO("@[Informações técnicas]", HtmlType.LIST, true),
-    DEMAND("@[Demandas]", HtmlType.SPAN, "\\d*", true),
-    TASK("@[Tarefa]", HtmlType.SPAN, "\\d*", true),
-    OLD("@[Mauro]", HtmlType.LIST, false),;
+    SUMMARY("@[Resumo]", Html.LIST, false),
+    DEV("@[Desenvolvedores]", Html.SPAN, false),
+    FIX("@[Corrigido]", Html.LIST, true),
+    NEW("@[Novo]", Html.LIST, true),
+    UPDATE("@[Alterado]", Html.LIST, true),
+    INFO("@[Informações técnicas]", Html.LIST, true),
+    DEMAND("@[Demandas]", Html.SPAN, true),
+    TASK("@[Tarefa]", Html.SPAN, true),
+    OLD("@[Mauro]", Html.LIST, false),;
 
-    private String   blockName;
-    private HtmlType htmlType;
-    private boolean  automatic;
-    private Pattern  regexValidation;
+    private String  blockName;
+    private Html    htmlType;
+    private boolean automatic;
 
-    private BlockType(String blockName, HtmlType htmlType, boolean automatic) {
-        this(blockName, htmlType, ".*", automatic);
-    }
-
-    private BlockType(String blockName, HtmlType htmlType, String regex, boolean automatic) {
+    private BlockType(String blockName, Html htmlType, boolean automatic) {
         this.blockName = blockName;
         this.htmlType = htmlType;
         this.automatic = automatic;
-        this.regexValidation = Pattern.compile(regex, Pattern.DOTALL);
     }
 
     public String getBlockName() {
         return blockName;
     }
 
-    public HtmlType getHtmlType() {
+    public Html getHtmlType() {
         return htmlType;
     }
 
@@ -48,13 +42,21 @@ public enum BlockType {
         return automatic;
     }
 
-    public Pattern getRegexValidation() {
-        return regexValidation;
-    }
+    public enum Html {
+        LIST("<ul><li>{0}</li></ul>"),
+        SPAN("<span class=\"multi-item-line pipe-border\">{0}</span>"),
+        LINK("<a href=\"{0}\" target=\"_blank\" >{1}</a>");
 
-    public enum HtmlType {
-        LIST,
-        SPAN
+        private String template;
+
+        private Html(String template) {
+            this.template = template;
+        }
+
+        public String asHtml(Object... message) {
+            return MessageFormat.format(template, message);
+        }
+
     }
 
 }

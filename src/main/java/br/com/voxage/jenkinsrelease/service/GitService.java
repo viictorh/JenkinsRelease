@@ -1,5 +1,7 @@
 package br.com.voxage.jenkinsrelease.service;
 
+import static br.com.voxage.jenkinsrelease.util.Log.log;
+
 import java.io.IOException;
 import java.text.MessageFormat;
 import java.time.LocalDateTime;
@@ -8,8 +10,6 @@ import java.util.Locale;
 import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import org.apache.log4j.Logger;
 
 import br.com.voxage.jenkinsrelease.bean.Commit;
 import br.com.voxage.jenkinsrelease.bean.Settings;
@@ -21,7 +21,7 @@ import br.com.voxage.jenkinsrelease.util.CommandPrompt;
  *
  */
 public class GitService {
-    private final static Logger            LOGGER                 = Logger.getLogger(GitService.class);
+
     private static final DateTimeFormatter GIT_DATE_FORMAT        = DateTimeFormatter.ofPattern("EEE MMM d HH:mm:ss yyyy Z", Locale.ENGLISH);
     private static final Pattern           GIT_EMAIL_PATTERN      = Pattern.compile("(?<=\\<)(.*?)(?=\\>)");
     private static final Pattern           GIT_HASH_PATTERN       = Pattern.compile("^[a-f0-9]{40}");
@@ -31,7 +31,8 @@ public class GitService {
     private static final String            FIRST_COMMIT           = "git rev-list --max-parents=0 HEAD";
     private static final String            HASHES_BETWEEN         = "git rev-list {0} ^^{1}";
     private static final String            COMMIT_MESSAGE         = "git log {0} -n 1";
-    private static final String            TAG_DATE               = " git log -1 --pretty='format:%cd' {0}";
+    private static final String            TAG_DATE               = "git log -1 --pretty='format:%cd' {0}";
+    private static final String            REMOTE_REPO            = "git ls-remote --get-url";
     private String                         command;
     private boolean                        ignoreMerge;
 
@@ -42,69 +43,74 @@ public class GitService {
     public GitService(Settings settings, boolean ignoreMerge) {
         this.ignoreMerge = ignoreMerge;
         this.command = "cd " + settings.getWorkspace() + " && ";
-        LOGGER.setLevel(settings.getLogLevel());
     }
 
     public String findPreviousTagFromHead() throws IOException {
         String cmd = command + PREVIOUS_TAG_FROM_HEAD;
-        LOGGER.info("findPreviousTagFromHead: " + cmd);
+        log.debug(cmd);
         String result = CommandPrompt.executeCommand(cmd);
-        LOGGER.info("findPreviousTagFromHead - [RESULT]: " + result);
+        log.debug("[RESULT]: " + result);
         return result;
     }
 
     public String findPreviousTagFromHash(String hash) throws IOException {
         String cmd = command + MessageFormat.format(PREVIOUS_TAG_FROM_HASH, hash);
-        LOGGER.info("findPreviousTagFromHash: " + cmd);
+        log.debug(cmd);
         String result = CommandPrompt.executeCommand(cmd);
-        LOGGER.info("findPreviousTagFromHash - [RESULT]: " + result);
+        log.debug("[RESULT]: " + result);
         return result;
     }
 
     public String findHashFromTag(String tag) throws IOException {
         String cmd = command + MessageFormat.format(HASH_FROM_TAG, tag);
-        LOGGER.info("findHashFromTag: " + cmd);
+        log.debug(cmd);
         String result = CommandPrompt.executeCommand(cmd);
-        LOGGER.info("findHashFromTag: - [RESULT]: " + result);
+        log.debug("[RESULT]: " + result);
         return result;
     }
 
     public String findHashesBetween(String hashStart, String hashEnd) throws IOException {
         String cmd = command + MessageFormat.format(HASHES_BETWEEN, hashStart, hashEnd);
-        LOGGER.info("findHashesBetween: " + cmd);
+        log.debug(cmd);
         String result = CommandPrompt.executeCommand(cmd);
-        LOGGER.info("findHashesBetween: - [RESULT]: " + result);
+        log.debug("[RESULT]: " + System.lineSeparator() + result);
         return result;
     }
 
     public String findFirstCommit() throws IOException {
         String cmd = command + FIRST_COMMIT;
-        LOGGER.info("findHashesBetween: " + cmd);
+        log.debug(cmd);
         String result = CommandPrompt.executeCommand(cmd);
-        LOGGER.info("findHashesBetween: - [RESULT]: " + result);
+        log.debug("[RESULT]: " + result);
         return result;
     }
 
     public LocalDateTime findTagDate(String tag) throws IOException {
         String cmd = command + MessageFormat.format(TAG_DATE, tag);
-        LOGGER.info("findTagDate: " + cmd);
+        log.debug(cmd);
         String result = CommandPrompt.executeCommand(cmd);
-        LOGGER.info("findTagDate: - [RESULT]: " + result);
+        log.debug("[RESULT]: " + result);
         return LocalDateTime.parse(result, GIT_DATE_FORMAT);
+    }
+
+    public String findRemote() throws IOException {
+        String cmd = command + REMOTE_REPO;
+        log.debug(cmd);
+        String result = CommandPrompt.executeCommand(cmd);
+        log.debug("[RESULT]: " + result);
+        return result;
     }
 
     public Optional<Commit> findCommitMessage(String hash) throws IOException {
         String cmd = command + MessageFormat.format(COMMIT_MESSAGE, hash);
-        LOGGER.info("findCommitMessage: " + cmd);
+        log.debug(cmd);
         int authorLineNum = 1;
         int dateLineNum = 2;
         int titleLineNum = 4;
         String result = CommandPrompt.executeCommand(cmd);
-        if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
-            LOGGER.debug("findCommitMessage: - [RESULT]: " + result);
-            LOGGER.debug("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
-        }
+        log.trace("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
+        log.trace("[RESULT]: " + result);
+        log.trace("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
         String[] lines = result.split(System.lineSeparator());
         if (lines.length < 5 || (lines[1].contains("Merge:") && ignoreMerge) || result.contains("@[ReleaseIgnore]")) {
             return Optional.empty();
@@ -123,12 +129,9 @@ public class GitService {
         String date = dateLine.replace("Date:", "").trim();
         String message = result.substring(result.indexOf(System.lineSeparator()) + 1).replaceAll(authorLine + "|" + dateLine + "|" + titleLine, "").trim();
         Commit commit = new Commit(hash, authorName, email, LocalDateTime.parse(date, GIT_DATE_FORMAT), titleLine, message);
-
-        if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("**********************************************************************************");
-            LOGGER.debug("findCommitMessage: [RESULT PARSED] " + commit);
-            LOGGER.debug("**********************************************************************************");
-        }
+        log.trace("**********************************************************************************");
+        log.trace("[RESULT PARSED] " + commit);
+        log.trace("**********************************************************************************");
         return Optional.of(commit);
     }
 
