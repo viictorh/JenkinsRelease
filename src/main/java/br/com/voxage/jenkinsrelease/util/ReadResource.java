@@ -11,20 +11,18 @@ import java.io.InputStream;
  */
 public class ReadResource {
 
-	private ReadResource() {
+    private ReadResource() {
+    }
 
-	}
-
-	public static String read(String fileName) throws IOException {
-		InputStream htmlInputStream = ReadResource.class.getClassLoader().getResourceAsStream(fileName);
-		try (ByteArrayOutputStream into = new ByteArrayOutputStream()) {
-			byte[] buf = new byte[4096];
-			for (int n; 0 < (n = htmlInputStream.read(buf));) {
-				into.write(buf, 0, n);
-			}
-
-			return new String(into.toByteArray(), "UTF-8");
-		}
-	}
+    public static String read(String fileName) throws IOException {
+        InputStream htmlInputStream = ReadResource.class.getClassLoader().getResourceAsStream(fileName);
+        try (ByteArrayOutputStream baous = new ByteArrayOutputStream()) {
+            byte[] buf = new byte[4096];
+            for (int n; 0 < (n = htmlInputStream.read(buf));) {
+                baous.write(buf, 0, n);
+            }
+            return new String(baous.toByteArray(), "UTF-8");
+        }
+    }
 
 }

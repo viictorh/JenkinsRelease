@@ -26,7 +26,6 @@ public enum Type implements ReleaseIdentifier {
         }
     },
     TAG {
-
         @Override
         public ReleaseType releaseType(String value) {
             if (value == null || value.trim().isEmpty()) {
