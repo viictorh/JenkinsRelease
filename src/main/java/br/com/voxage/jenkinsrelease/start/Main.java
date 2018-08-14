@@ -1,11 +1,22 @@
 package br.com.voxage.jenkinsrelease.start;
 
+import static br.com.voxage.jenkinsrelease.util.Log.log;
+
 import java.io.IOException;
 
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.CommandLineParser;
+import org.apache.commons.cli.DefaultParser;
+import org.apache.commons.cli.HelpFormatter;
+import org.apache.commons.cli.Option;
+import org.apache.commons.cli.Options;
+import org.apache.commons.cli.ParseException;
+import org.apache.log4j.Level;
+
+import br.com.voxage.jenkinsrelease.bean.Settings;
 import br.com.voxage.jenkinsrelease.constant.Type;
-import br.com.voxage.jenkinsrelease.service.CommitIdentifier;
-import br.com.voxage.jenkinsrelease.service.Generator;
-import br.com.voxage.jenkinsrelease.service.PageGenerator;
+import br.com.voxage.jenkinsrelease.service.IndexGenerator;
+import br.com.voxage.jenkinsrelease.service.ReleaseGenerator;
 
 /**
  * 
@@ -14,36 +25,33 @@ import br.com.voxage.jenkinsrelease.service.PageGenerator;
  */
 public class Main {
 
-    public static void main(String[] args) throws Exception {
-        proccessArgs(args).process();
-        System.out.println("Execu��o finalizada com sucesso.");
+    public static void main(String[] args) throws IOException, ParseException {
+        long start = System.currentTimeMillis();
+        log.debug(args);
+        Settings settings = options(args);
+        log.changeLevel(settings.getLogLevel());
+        log.info("Parametros enviados: " + settings);
+        log.info("Iniciando geração do release notes da versão");
+        ReleaseGenerator.INSTANCE.start(settings);
+        log.info("Iniciando geração do índice");
+        IndexGenerator.INSTANCE.start(settings.getWorkspace(), Type.TAG.releaseType(settings.getTag()));
+        long end = System.currentTimeMillis();
+        log.info("*************************************************************");
+        log.info("Execução realizada com sucesso em " + ((end - start) / 1000) + " segundos");
+        log.info("*************************************************************");
     }
 
-    private static Generator proccessArgs(String[] args) throws IOException {
-        StringBuilder sb = new StringBuilder();
-        if (args.length == 0) {
-            sb.append("Execute este jar de uma das duas maneiras abaixo: ").append(System.lineSeparator());
-            sb.append("1 - Para gerar a tag inicial do commit: java -jar JenkinsRelease.jar \"COMMIT\" \"<caminho workspace>\"").append(System.lineSeparator());
-            sb.append("2 - Para visualizar o template dos release notes: java -jar JenkinsRelease.jar \"PRINT\"").append(System.lineSeparator());
-            sb.append("3 - Para criar a pagina principal com indices e todos os release: java -jar JenkinsRelease.jar <caminho dos release notes> <branch> ").append(System.lineSeparator());
-
-            throw new IllegalArgumentException(sb.toString());
-        } else if ("COMMIT".equals(args[0])) {
-            if (args.length < 2) {
-                throw new IllegalArgumentException("Informe o workspace que ser� procurado o commit inicial");
-            }
-            return new CommitIdentifier(args[1]);
-        } else if (args.length == 3) {
-            Type type = Type.valueOf(args[1]);
-            if (type == null) {
-                System.out.println("Type (segundo parametro), n�o identificado. Ele deve ter o valor 'TAG' ou 'BRANCH'");
-                return new PageGenerator(args[0]);
-            } else {
-                return new PageGenerator(args[0], type.releaseType(args[2]));
-            }
-        } else {
-            return new PageGenerator(args[0]);
-        }
+    public static Settings options(String[] args) throws ParseException {
+        Options options = new Options();
+        options.addRequiredOption("w", "workspace", true, "Workspace do git que contém a versão que será gerada do release notes");
+        options.addRequiredOption("t", "to", true, "Tag que será gerada");
+        options.addOption(new Option("f", "from", true, "Tag até a qual irá"));
+        options.addOption(new Option("l", "log-level", true, "Informa o log level, as opções são: " + Level.ERROR + " " + Level.INFO + " " + Level.WARN + " " + Level.DEBUG + " " + Level.TRACE + " " + Level.OFF));
+        HelpFormatter formatter = new HelpFormatter();
+        formatter.printHelp("java -jar JenkinsRelease.jar", options, true);
+        CommandLineParser parser = new DefaultParser();
+        CommandLine cmd = parser.parse(options, args);
+        return new Settings(cmd.getOptionValue("w"), cmd.getOptionValue("t"), cmd.getOptionValue("f"), cmd.getOptionValue("l"));
     }
 
 }

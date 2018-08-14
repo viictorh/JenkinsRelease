@@ -63,9 +63,9 @@ html, body {
 }
 
 .commit-version {
-	font-size: 30px;
-	font-size: 2vw;
-	font-weight: bold;
+	font-size: 20px;
+    font-weight: bold;
+    word-wrap: break-word;
 }
 
 .commit-date {
@@ -103,23 +103,29 @@ a:hover, a:focus, a:visited, a:link {
 }
 
 .item-description {
-    display: block;
-    margin-left: 15px;
-} 
+	display: block;
+	margin-left: 15px;
+}
 
+ul {
+	white-space: pre-wrap;
+	font-size: 12px;
+}
 </style>
 
 <body>
 	<div class="container box-shadow">
-		<h1 id="title" align="center">Release notes - </h1>
+		<h1 id="title" align="center">Release notes - @[Project]</h1>
 		<div class="row">
 			<div class="col-sm-3 text-center">
-				<div id="commit-version" class="commit-version"></div>
-				<div id="commit-date" class="commit-date">${BUILD_TIMESTAMP}</div>
+				<div id="commit-version" class="commit-version">@[Tag]</div>
+				<div id="commit-date" class="commit-date">@[TagDate]</div>
 				<div class="header">
 					<div>
-						<a id="gitblit-link" href="http://svox-back01:8800/commit/"
-							target="_blank" class="fab fa-git"></a> <span id="possibleBreak" style="display: none;"> | <i
+						<a id="gitblit-link"
+							href="http://svox-back01:8800/commit/@[gitBlit]" target="_blank"
+							class="fab fa-git"></a> <span id="possibleBreak"
+							style="display: @[Compatibility];"> | <i
 							class="fa fa-exclamation-circle text-danger"
 							title="Possível quebra de compatibilidade com outro módulo"></i>
 						</span>
@@ -128,7 +134,7 @@ a:hover, a:focus, a:visited, a:link {
 				</div>
 			</div>
 			<div class="col-sm-9">
-				<div id="summary-items"></div>
+				<div id="summary-items">@[Resumo]</div>
 			</div>
 		</div>
 		<div class="row">
@@ -139,7 +145,7 @@ a:hover, a:focus, a:visited, a:link {
 				</div>
 			</div>
 			<div class="col-sm-9">
-				<div id="dev-names"></div>
+				<div id="dev-names">@[Desenvolvedores]</div>
 			</div>
 		</div>
 		<div class="row">
@@ -151,7 +157,7 @@ a:hover, a:focus, a:visited, a:link {
 				</div>
 			</div>
 			<div class="col-sm-9">
-				<div id="fixed-items"></div>
+				<div id="fixed-items">@[Corrigido]</div>
 			</div>
 		</div>
 		<div class="row">
@@ -162,7 +168,7 @@ a:hover, a:focus, a:visited, a:link {
 				</div>
 			</div>
 			<div class="col-sm-9">
-				<div id="new-items"></div>
+				<div id="new-items">@[Novo]</div>
 			</div>
 		</div>
 		<div class="row">
@@ -173,7 +179,7 @@ a:hover, a:focus, a:visited, a:link {
 				</div>
 			</div>
 			<div class="col-sm-9">
-				<div id="changed-items"></div>
+				<div id="changed-items">@[Alterado]</div>
 			</div>
 		</div>
 		<div class="row">
@@ -187,19 +193,21 @@ a:hover, a:focus, a:visited, a:link {
 				</div>
 			</div>
 			<div class="col-sm-9">
-				<div id="tecnical-items"></div>
+				<div id="tecnical-items">@[Informações técnicas]</div>
 			</div>
 		</div>
-		<div id="oldCommit" class="row" style="display:none;">
+		<div id="oldCommit" class="row" style="display: @[Old];">
 			<div class="col-sm-3 text-title">
 				<div class="center-block"></div>
 				<div>
-					<img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABkAAAAZCAMAAADzN3VRAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAyBpVFh0WE1MOmNvbS5hZG9iZS54bXAAAAAAADw/eHBhY2tldCBiZWdpbj0i77u/IiBpZD0iVzVNME1wQ2VoaUh6cmVTek5UY3prYzlkIj8+IDx4OnhtcG1ldGEgeG1sbnM6eD0iYWRvYmU6bnM6bWV0YS8iIHg6eG1wdGs9IkFkb2JlIFhNUCBDb3JlIDUuMC1jMDYwIDYxLjEzNDc3NywgMjAxMC8wMi8xMi0xNzozMjowMCAgICAgICAgIj4gPHJkZjpSREYgeG1sbnM6cmRmPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5LzAyLzIyLXJkZi1zeW50YXgtbnMjIj4gPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9IiIgeG1sbnM6eG1wPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvIiB4bWxuczp4bXBNTT0iaHR0cDovL25zLmFkb2JlLmNvbS94YXAvMS4wL21tLyIgeG1sbnM6c3RSZWY9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9zVHlwZS9SZXNvdXJjZVJlZiMiIHhtcDpDcmVhdG9yVG9vbD0iQWRvYmUgUGhvdG9zaG9wIENTNSBXaW5kb3dzIiB4bXBNTTpJbnN0YW5jZUlEPSJ4bXAuaWlkOjhDOEUyNTM1NDM0MTExRThCQUExRDEyOTA3RTQ3MTMxIiB4bXBNTTpEb2N1bWVudElEPSJ4bXAuZGlkOjhDOEUyNTM2NDM0MTExRThCQUExRDEyOTA3RTQ3MTMxIj4gPHhtcE1NOkRlcml2ZWRGcm9tIHN0UmVmOmluc3RhbmNlSUQ9InhtcC5paWQ6OEM4RTI1MzM0MzQxMTFFOEJBQTFEMTI5MDdFNDcxMzEiIHN0UmVmOmRvY3VtZW50SUQ9InhtcC5kaWQ6OEM4RTI1MzQ0MzQxMTFFOEJBQTFEMTI5MDdFNDcxMzEiLz4gPC9yZGY6RGVzY3JpcHRpb24+IDwvcmRmOlJERj4gPC94OnhtcG1ldGE+IDw/eHBhY2tldCBlbmQ9InIiPz7fmkGkAAAAMFBMVEWGhoZ1dXXd3d21tbUSEhLKysr7+/ugoKBnZ2fAwMA7OztYWFgoKCjy8vIAAAD////HpwAcAAAAEHRSTlP///////////////////8A4CNdGQAAALFJREFUeNp00FkWgCAIBVA1nABh/7vNY2Zaxp/dE8MzOlewvaKqmcFZ6QV+FSuc4SJexQjHLviWUf/CO2FEZtrJoaE9NISXAINpAvaG1PbyPmfXRLo4vGaPBgp8tCvx3op8FxSoKaWRC/UmRrm+8nMJKMW7m6zlxhz8lWCXv6gMWeJ6lm5S0gM5zKIl9mHXaZPUAOrnhEK6Eyqe+Su+HZ7gK1liHU2ymQNSc4wwtTsFGACich+r48eXQwAAAABJRU5ErkJggg==" />
-					<span title="Commits antigos e/ou despadronizados">Não categorizado</span>
+					<img
+						src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABkAAAAZCAMAAADzN3VRAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAyBpVFh0WE1MOmNvbS5hZG9iZS54bXAAAAAAADw/eHBhY2tldCBiZWdpbj0i77u/IiBpZD0iVzVNME1wQ2VoaUh6cmVTek5UY3prYzlkIj8+IDx4OnhtcG1ldGEgeG1sbnM6eD0iYWRvYmU6bnM6bWV0YS8iIHg6eG1wdGs9IkFkb2JlIFhNUCBDb3JlIDUuMC1jMDYwIDYxLjEzNDc3NywgMjAxMC8wMi8xMi0xNzozMjowMCAgICAgICAgIj4gPHJkZjpSREYgeG1sbnM6cmRmPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5LzAyLzIyLXJkZi1zeW50YXgtbnMjIj4gPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9IiIgeG1sbnM6eG1wPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvIiB4bWxuczp4bXBNTT0iaHR0cDovL25zLmFkb2JlLmNvbS94YXAvMS4wL21tLyIgeG1sbnM6c3RSZWY9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9zVHlwZS9SZXNvdXJjZVJlZiMiIHhtcDpDcmVhdG9yVG9vbD0iQWRvYmUgUGhvdG9zaG9wIENTNSBXaW5kb3dzIiB4bXBNTTpJbnN0YW5jZUlEPSJ4bXAuaWlkOjhDOEUyNTM1NDM0MTExRThCQUExRDEyOTA3RTQ3MTMxIiB4bXBNTTpEb2N1bWVudElEPSJ4bXAuZGlkOjhDOEUyNTM2NDM0MTExRThCQUExRDEyOTA3RTQ3MTMxIj4gPHhtcE1NOkRlcml2ZWRGcm9tIHN0UmVmOmluc3RhbmNlSUQ9InhtcC5paWQ6OEM4RTI1MzM0MzQxMTFFOEJBQTFEMTI5MDdFNDcxMzEiIHN0UmVmOmRvY3VtZW50SUQ9InhtcC5kaWQ6OEM4RTI1MzQ0MzQxMTFFOEJBQTFEMTI5MDdFNDcxMzEiLz4gPC9yZGY6RGVzY3JpcHRpb24+IDwvcmRmOlJERj4gPC94OnhtcG1ldGE+IDw/eHBhY2tldCBlbmQ9InIiPz7fmkGkAAAAMFBMVEWGhoZ1dXXd3d21tbUSEhLKysr7+/ugoKBnZ2fAwMA7OztYWFgoKCjy8vIAAAD////HpwAcAAAAEHRSTlP///////////////////8A4CNdGQAAALFJREFUeNp00FkWgCAIBVA1nABh/7vNY2Zaxp/dE8MzOlewvaKqmcFZ6QV+FSuc4SJexQjHLviWUf/CO2FEZtrJoaE9NISXAINpAvaG1PbyPmfXRLo4vGaPBgp8tCvx3op8FxSoKaWRC/UmRrm+8nMJKMW7m6zlxhz8lWCXv6gMWeJ6lm5S0gM5zKIl9mHXaZPUAOrnhEK6Eyqe+Su+HZ7gK1liHU2ymQNSc4wwtTsFGACich+r48eXQwAAAABJRU5ErkJggg==" />
+					<span title="Commits antigos e/ou despadronizados">Não
+						categorizado</span>
 				</div>
 			</div>
 			<div class="col-sm-9">
-				<div id="oldcommits-items"></div>
+				<div id="oldcommits-items">@[Mauro]</div>
 			</div>
 		</div>
 		<div class="row">
@@ -209,7 +217,7 @@ a:hover, a:focus, a:visited, a:link {
 				</div>
 			</div>
 			<div class="col-sm-10 ">
-				<div id="demand-items"></div>
+				<div id="demand-items">@[Demandas]</div>
 			</div>
 		</div>
 		<div class="row">
@@ -219,187 +227,12 @@ a:hover, a:focus, a:visited, a:link {
 				</div>
 			</div>
 			<div class="col-sm-10 ">
-				<div id="tasks-items"></div>
+				<div id="tasks-items">@[Tarefa]</div>
 			</div>
 		</div>
 	</div>
-<input id="repoName" type="hidden" value="{{repoName}}">
-{{#commits}} 
-<input name="fullMessage" type="hidden" value="{{message}}">
-<input name="messageTitle" type="hidden" value="{{{messageTitle}}}">
-<input name="author" type="hidden" value="{{authorName}}">
-<input name="hash" type="hidden" value="{{hash}}">
-	{{#messageBodyItems}}
-		<input name="message_{{hash}}" type="hidden" value="{{.}}">
-	{{/messageBodyItems}}
-{{/commits}}
-<script>
-var tagVersion =  "${GIT_TAG_NAME}";
 
-//CRIANDO ARRAYS
-var summary = [];
-var devs = [];
-var fixed = [];
-var newFeature = [];
-var changed = [];
-var tecnicalInfo = [];
-var demands = [];
-var tasks = [];
-var dinossaur = [];
-var commitPosition = 0;
-var repoName = document.getElementById("repoName").value;
-var commits = document.getElementsByName("fullMessage");
-var messageTitle = document.getElementsByName("messageTitle");
-var author= document.getElementsByName("author");
-var hash= document.getElementsByName("hash");
-var commitPosition = 0;
-
-document.getElementById("commit-version").innerHTML = tagVersion;
-	for(var i = 0; 	i < commits.length; i++){
-		console.info('Iniciando leitura de commit');
-		var fullMessage = commits[i].value;
-		if(!ignoreCommit(fullMessage)){
-			commitPosition++;
-			addItem(summary, messageTitle[i].value);
-			addItem(devs, author[i].value);	
-			var arrayType = dinossaur;
-			var addItemList = true;
-			if(commitPosition === 1){		
-				var repo = repoName.replace(/(?:\\\\svox-back01\\VoxAge_Back01\\GIT\\DSS\\).+?\\.*?\\/gi,"");	
-				var title = repoName.substr(repoName.lastIndexOf('\\') + 1);
-				document.getElementById("gitblit-link").href = document.getElementById("gitblit-link").href+ repo + "/${GIT_COMMIT}";
-				document.getElementById("title").innerHTML = document.getElementById("title").innerHTML+ title; 
-			}
-			
-			var messageLines = document.getElementsByName("message_"+hash[i].value);
-			for(var j = 0; 	j < messageLines.length; j++){
-				evaluateCommit(messageLines[j].value);
-			}
-		}
-		console.info('Finalizando leitura de commit');
-	}
-
-
-
-//////////////////////
-function evaluateCommit(text){
-	if(text == '@[Corrigido]'){
-		arrayType = fixed;
-		addItemList = false;
-	}else if(text == '@[Novo]'){
-		arrayType = newFeature;
-		addItemList = false;
-	}else if(text == '@[Alterado]'){
-		arrayType = changed;
-		addItemList = false;
-	}else if(text == '@[Informações técnicas]'){
-		arrayType = tecnicalInfo;
-		addItemList = false;
-	}else if(text == '@[Demandas]'){
-		arrayType = demands;
-		addItemList = false;
-	}else if(text == '@[Tarefa]'){
-		arrayType = tasks;
-		addItemList = false;
-	}else if(text.indexOf('@[Quebra')  !== -1){
-		addItemList = false;
-		var quebraTag = text.match(/@\[Quebra.*\]/g)[0];
-		var str = quebraTag.match(/\((S|N)\)/gi)[0];
-		var quebraStr =str.substring(1, str.length - 1).toLowerCase();
-		if(quebraStr == 's'){
-			document.getElementById("possibleBreak").style.display = "inline";
-		}
-	}
-	else{
-		addItemList = true;
-		if(text.indexOf('@[Mantis')  !== -1){
-			var mantisTag = text.match(/@\[Mantis.*\]/g)[0];
-			var str = mantisTag.match(/\(\d*\)/g)[0];
-			var number =str.substring(1, str.length - 1);
-			var url = 'http://svox-teste03/mantis/view.php?id=' + number;
-			text = generateLink(url, 'Mantis-'+ number) + text.replace(mantisTag, "");
-		}
-	}
-
-	if(addItemList){
-		addItem(arrayType, text);
-	}
-}
-
-
-//GERANDO HTML
-generateList(summary, document.getElementById('summary-items'), true);
-generateItem(devs, document.getElementById('dev-names'), false);
-generateList(fixed, document.getElementById('fixed-items'), false);
-generateList(newFeature, document.getElementById('new-items'), false);
-generateList(changed, document.getElementById('changed-items'), false);
-generateList(tecnicalInfo, document.getElementById('tecnical-items'), false);
-generateItem(demands, document.getElementById('demand-items'), false);
-generateItem(tasks, document.getElementById('tasks-items'), false);
-
-if(dinossaur.length > 0){
-	document.getElementById('oldCommit').style.display = 'block';
-	generateList(dinossaur, document.getElementById('oldcommits-items'), false);
-}
-	
-
-//FUNÇÕES 
-function ignoreCommit(fullCommitMessage){
-	return fullCommitMessage.indexOf('@[ReleaseIgnore]') !== -1;
-}
-
-
-function addItem(array, item){
-	if(item.indexOf('N/A')  !== -1){
-		item = item.replace(/^\s*(\*|-|\.)\s*/g,"");
-	}
-	
-	if(array.indexOf(item) === -1){
-		array.push(item);
-	}
-	
-	var index = array.indexOf("N/A");
-	if(index !== -1 && array.length > 1){
-		array.splice(index, 1);		
-	}
-}
-
-function generateList( array,  location, addBullets){
-	 var ul = document.createElement('ul');	
-	 for(var i=0;i<array.length;i++)
-	 {
-		 var txt = array[i];
-	     var element=document.createElement('li');
-	     if(txt.indexOf('/mantis/view.php')  !== -1){
-	    	 element.innerHTML = txt;
-		 }else{
-			 var regex = /^\s*(\*|-|\.)\s*/g; 
-			 if(i != 0 && !addBullets && !regex.test(txt)){
-				 element=document.createElement('span');
-				 element.className='item-description';
-			 }
-			 txt = txt.replace(regex,"");
-			 element.appendChild(document.createTextNode(txt));
-		 }
-	     ul.appendChild(element);
-	 }
-	 location.appendChild(ul); 
-}
-
-function generateItem( array,  location){	
-	 for(var i=0;i<array.length;i++){
-		 var span=document.createElement('span');
-		 span.className = i === array.length-1 ? "multi-item-line" : "multi-item-line pipe-border";
-	     span.appendChild(document.createTextNode(array[i]));
-		 location.appendChild(span);		
-	 }
-}
-
-function generateLink(url, label){
-	return "<a href='"+url+"' target='_blank' >" + label + "</a>";
-}
-
-
+	<script>
 var ua = window.navigator.userAgent;
 var msie = ua.indexOf("MSIE ");
 var timeout = msie > 0 ? 200 : 0;
@@ -408,7 +241,7 @@ function sendMessage() {
 		let idealHeight = computeIdealHeight();
 		var message = {
 				"idMessage":"iframe",
-				"iframeId": tagVersion,
+				"iframeId": "@[Tag]",
 				"size": idealHeight
 				}
 		console.info("Mensagem enviada ++++");
@@ -447,9 +280,6 @@ jQuery(document).ready(function(){
 });
 
 window.onload = function(){ sendMessage(); };
-
-
-
 
 </script>
 	<audio id="audio-yuri" style="visibility: hidden; height: 0px" controls
