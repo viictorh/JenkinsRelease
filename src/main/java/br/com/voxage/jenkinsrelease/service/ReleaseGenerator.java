@@ -120,7 +120,7 @@ public enum ReleaseGenerator {
 
         fileContent = generateMantisUrl(fileContent);
         String filePath = settings.getWorkspace() + File.separator + "ReleaseNotes_" + settings.getTag() + ".html";
-        Files.write(Paths.get(filePath), fileContent.getBytes());
+        Files.write(Paths.get(filePath), fileContent.getBytes("UTF-8"));
         log.info("Release notes criado no caminho: " + filePath);
     }
 

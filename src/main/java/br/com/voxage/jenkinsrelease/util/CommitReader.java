@@ -1,13 +1,13 @@
 package br.com.voxage.jenkinsrelease.util;
 
+import static br.com.voxage.jenkinsrelease.util.Log.log;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import org.apache.log4j.Logger;
 
 import br.com.voxage.jenkinsrelease.bean.Commit;
 import br.com.voxage.jenkinsrelease.bean.Release;
@@ -18,7 +18,6 @@ public class CommitReader {
     private List<Commit>         commits;
     private Release              release;
     private static final Pattern COMPATIBILITY_PATTERN = Pattern.compile("@\\[Quebra.*\\]", Pattern.CASE_INSENSITIVE);
-    private final static Logger  LOGGER                = Logger.getLogger(CommitReader.class);
 
     public CommitReader(List<Commit> commits) {
         this.commits = commits;
@@ -58,13 +57,13 @@ public class CommitReader {
             }
             blockOrder.clear();
         }
-        LOGGER.trace(release);
+        log.trace(release);
         return release;
     }
 
     private String getText(String message, ArrayList<Block> arrayList, Block block) {
-        LOGGER.debug(message);
-        LOGGER.debug(block);
+        log.trace(message);
+        log.trace(block);
         if (block.position != -1) {
             int next = message.length();
             int indexOf = arrayList.indexOf(block);
@@ -92,6 +91,11 @@ public class CommitReader {
                 return this.type.compareTo(o.type);
             }
             return compareTo;
+        }
+
+        @Override
+        public String toString() {
+            return "Block [type=" + type + ", position=" + position + "]";
         }
 
     }

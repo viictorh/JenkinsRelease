@@ -27,6 +27,7 @@ public class Main {
 
     public static void main(String[] args) throws IOException, ParseException {
         long start = System.currentTimeMillis();
+        log.debug(args);
         Settings settings = options(args);
         log.changeLevel(settings.getLogLevel());
         log.info("Parametros enviados: " + settings);

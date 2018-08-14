@@ -11,6 +11,8 @@ import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.commons.lang3.StringUtils;
+
 import br.com.voxage.jenkinsrelease.bean.Commit;
 import br.com.voxage.jenkinsrelease.bean.Settings;
 import br.com.voxage.jenkinsrelease.util.CommandPrompt;
@@ -66,6 +68,9 @@ public class GitService {
         log.debug(cmd);
         String result = CommandPrompt.executeCommand(cmd);
         log.debug("[RESULT]: " + result);
+        if (!StringUtils.isBlank(result)) {
+            result = result.split("\\r?\\n")[0];
+        }
         return result;
     }
 

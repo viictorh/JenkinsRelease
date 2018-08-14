@@ -46,7 +46,7 @@ public enum IndexGenerator {
             String html = ReadResource.read("index.html");
             String format = html.replace("$(indice)", span.toString()).replace("$(fixed-indice)", option.toString()).replace("$(iframes)", iframe.toString());
             Path path = Paths.get(filePath + File.separator + "index.html");
-            Files.write(path, format.getBytes());
+            Files.write(path, format.getBytes("UTF-8"));
             log.info("Índice criado no caminho: " + path);
         }
     }
