@@ -34,7 +34,7 @@ public enum ReleaseGenerator {
 
     private static final DateTimeFormatter RELEASE_DATE_PATTERN = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss");
     private static final String            MANTIS_URL           = "http://svox-teste03/mantis/view.php?id={0}";
-    private static final Pattern           MANTIS_PATTERN       = Pattern.compile("@\\[mantis.*\\]", Pattern.CASE_INSENSITIVE);
+    private static final Pattern           MANTIS_PATTERN       = Pattern.compile("@\\[mantis[^\\]]*\\]", Pattern.CASE_INSENSITIVE);
     private static final Pattern           GITBLIT_REPO         = Pattern.compile("http://.*/r/", Pattern.CASE_INSENSITIVE);
     private static final Pattern           SVOX_REPO            = Pattern.compile("(\\\\\\\\svox-back01\\\\VoxAge_Back01\\\\GIT\\\\DSS\\\\).+?\\\\.*?\\\\", Pattern.CASE_INSENSITIVE);
     private static final Pattern           NUMBER_PATTERN       = Pattern.compile("\\d+");
@@ -113,6 +113,7 @@ public enum ReleaseGenerator {
         for (BlockMessage blockMessage : release.getBlockMessages()) {
             for (String item : blockMessage.getMessageItems()) {
                 sb.append(blockMessage.getBlockType().getHtmlType().asHtml(item));
+                sb.append(System.lineSeparator());
             }
             fileContent = fileContent.replace(blockMessage.getBlockType().getBlockName(), sb.toString());
             sb = new StringBuilder();
