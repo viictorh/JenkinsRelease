@@ -132,7 +132,7 @@ public class GitService {
         String authorName = authorLine.replaceAll("Au.*:|<|>|" + email, "").trim();
         String dateLine = lines[dateLineNum];
         String date = dateLine.replace("Date:", "").trim();
-        String message = result.substring(result.indexOf(System.lineSeparator()) + 1).replaceAll(authorLine + "|" + dateLine + "|" + titleLine, "").trim();
+        String message = result.substring(result.indexOf(System.lineSeparator()) + 1).replaceAll(Pattern.quote(authorLine) + "|" + Pattern.quote(dateLine) + "|" + Pattern.quote(titleLine), "").trim();
         Commit commit = new Commit(hash, authorName, email, LocalDateTime.parse(date, GIT_DATE_FORMAT), titleLine, message);
         log.trace("**********************************************************************************");
         log.trace("[RESULT PARSED] " + commit);
