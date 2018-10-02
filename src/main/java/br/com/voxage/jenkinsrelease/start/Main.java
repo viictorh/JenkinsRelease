@@ -3,6 +3,8 @@ package br.com.voxage.jenkinsrelease.start;
 import static br.com.voxage.jenkinsrelease.util.Log.log;
 
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.ResourceBundle;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
@@ -25,9 +27,16 @@ import br.com.voxage.jenkinsrelease.service.ReleaseGenerator;
  */
 public class Main {
 
+    private static final ResourceBundle BUNDLE = ResourceBundle.getBundle("version");
+
     public static void main(String[] args) throws IOException, ParseException {
+        log.changeLevel(Level.ALL);
+        log.info("INICIANDO JENKINS RELEASE");
+        log.info("-----------------------------------------");
+        log.info("Versão: " + BUNDLE.getString("version"));
+        log.info("-----------------------------------------");
         long start = System.currentTimeMillis();
-        log.debug(args);
+        log.debug(Arrays.deepToString(args));
         Settings settings = options(args);
         log.changeLevel(settings.getLogLevel());
         log.info("Parametros enviados: " + settings);
