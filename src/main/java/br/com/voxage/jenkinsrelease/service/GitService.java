@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.text.MessageFormat;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Arrays;
 import java.util.Locale;
 import java.util.Optional;
 import java.util.regex.Matcher;
@@ -29,12 +30,14 @@ public class GitService {
     private static final Pattern           GIT_HASH_PATTERN       = Pattern.compile("^[a-f0-9]{40}");
     private static final String            PREVIOUS_TAG_FROM_HEAD = "git describe --tags --abbrev=0 --first-parent HEAD^^1";
     private static final String            PREVIOUS_TAG_FROM_HASH = "git describe --tags --abbrev=0 --first-parent {0}^^1";
+    private static final String            MOST_RECENT_TAG        = "git describe --tags --abbrev=0 --first-parent {0}";
     private static final String            HASH_FROM_TAG          = "git show-ref -s {0}";
     private static final String            FIRST_COMMIT           = "git rev-list --max-parents=0 HEAD";
     private static final String            HASHES_BETWEEN         = "git rev-list {0} ^^{1}";
     private static final String            COMMIT_MESSAGE         = "git log {0} -n 1";
     private static final String            TAG_DATE               = "git log -1 --pretty='format:%cd' {0}";
     private static final String            REMOTE_REPO            = "git ls-remote --get-url";
+    private static final String            BRANCH_HASH            = "git rev-parse {0}";
     private String                         command;
     private boolean                        ignoreMerge;
 
@@ -63,8 +66,27 @@ public class GitService {
         return result;
     }
 
+    public String findMostRecentTagFromHash(String hash) throws IOException {
+        String cmd = command + MessageFormat.format(MOST_RECENT_TAG, hash);
+        log.debug(cmd);
+        String result = CommandPrompt.executeCommand(cmd);
+        log.debug("[RESULT]: " + result);
+        return result;
+    }
+
     public String findHashFromTag(String tag) throws IOException {
         String cmd = command + MessageFormat.format(HASH_FROM_TAG, tag);
+        log.debug(cmd);
+        String result = CommandPrompt.executeCommand(cmd);
+        log.debug("[RESULT]: " + result);
+        if (!StringUtils.isBlank(result)) {
+            result = result.split("\\r?\\n")[0];
+        }
+        return result;
+    }
+
+    public String findBranchHash(String branchName) throws IOException {
+        String cmd = command + MessageFormat.format(BRANCH_HASH, branchName);
         log.debug(cmd);
         String result = CommandPrompt.executeCommand(cmd);
         log.debug("[RESULT]: " + result);
@@ -132,7 +154,7 @@ public class GitService {
         String authorName = authorLine.replaceAll("Au.*:|<|>|" + email, "").trim();
         String dateLine = lines[dateLineNum];
         String date = dateLine.replace("Date:", "").trim();
-        String message = result.substring(result.indexOf(System.lineSeparator()) + 1).replaceAll(Pattern.quote(authorLine) + "|" + Pattern.quote(dateLine) + "|" + Pattern.quote(titleLine), "").trim();
+        String message = String.join(System.lineSeparator(), Arrays.asList(lines).subList(titleLineNum + 1, lines.length));
         Commit commit = new Commit(hash, authorName, email, LocalDateTime.parse(date, GIT_DATE_FORMAT), titleLine, message);
         log.trace("**********************************************************************************");
         log.trace("[RESULT PARSED] " + commit);
