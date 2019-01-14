@@ -16,7 +16,6 @@ import org.apache.commons.cli.ParseException;
 import org.apache.log4j.Level;
 
 import br.com.voxage.jenkinsrelease.bean.Settings;
-import br.com.voxage.jenkinsrelease.constant.Type;
 import br.com.voxage.jenkinsrelease.service.IndexGenerator;
 import br.com.voxage.jenkinsrelease.service.ReleaseGenerator;
 
@@ -43,7 +42,7 @@ public class Main {
         log.info("Iniciando geração do release notes da versão");
         ReleaseGenerator.INSTANCE.start(settings);
         log.info("Iniciando geração do índice");
-        IndexGenerator.INSTANCE.start(settings.getWorkspace(), Type.TAG.releaseType(settings.getTag()));
+        IndexGenerator.INSTANCE.start(settings.getWorkspace(), settings.getReleaseType());
         long end = System.currentTimeMillis();
         log.info("*************************************************************");
         log.info("Execução realizada com sucesso em " + ((end - start) / 1000) + " segundos");

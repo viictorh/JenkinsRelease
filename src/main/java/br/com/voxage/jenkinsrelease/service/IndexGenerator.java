@@ -12,6 +12,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import br.com.voxage.jenkinsrelease.constant.Type.ReleaseType;
 import br.com.voxage.jenkinsrelease.util.ReadResource;
@@ -24,11 +25,13 @@ import br.com.voxage.jenkinsrelease.util.ReadResource;
 public enum IndexGenerator {
     INSTANCE;
 
+    private static final Pattern LAST_NUMBERS = Pattern.compile("(\\d+)(?!.*\\d)");
+
     public void start(String fromPath, ReleaseType releaseType) throws IOException {
         final FilenameFilter filter = (dir, name) -> dir.isDirectory() && name.toLowerCase().endsWith(".html");
         File filePath = new File(fromPath);
         String[] list = filePath.list(filter);
-        Arrays.sort(list, (f1, f2) -> f2.compareToIgnoreCase(f1));
+        Arrays.sort(list, (f1, f2) -> orderFiles(f1, f2));
         if (list != null && list.length > 0) {
             StringBuilder span = new StringBuilder();
             StringBuilder option = new StringBuilder();
@@ -49,6 +52,22 @@ public enum IndexGenerator {
             Files.write(path, format.getBytes("UTF-8"));
             log.info("Índice criado no caminho: " + path);
         }
+    }
+
+    private int orderFiles(String f1, String f2) {
+        Integer i1 = 0, i2 = 0;
+        Matcher m1 = LAST_NUMBERS.matcher(f1);
+        Matcher m2 = LAST_NUMBERS.matcher(f2);
+        if (m1.find()) {
+            i1 = Integer.parseInt(m1.group());
+        }
+
+        if (m2.find()) {
+            i2 = Integer.parseInt(m2.group());
+        }
+
+        return i2.compareTo(i1);
+
     }
 
     public String encode(String url) throws UnsupportedEncodingException {

@@ -26,6 +26,7 @@ import br.com.voxage.jenkinsrelease.bean.Commit;
 import br.com.voxage.jenkinsrelease.bean.Release;
 import br.com.voxage.jenkinsrelease.bean.Settings;
 import br.com.voxage.jenkinsrelease.constant.BlockType.Html;
+import br.com.voxage.jenkinsrelease.constant.Type.ReleaseType;
 import br.com.voxage.jenkinsrelease.util.CommitReader;
 import br.com.voxage.jenkinsrelease.util.ReadResource;
 
@@ -53,12 +54,31 @@ public enum ReleaseGenerator {
         generateFile(tagDate, tagHash, remoteRepo, release);
     }
 
-    private String findEndCommit(String commit) throws IOException {
+    /**
+     * Busca pelo commit de inicio da versão que está sendo gerado. <br />
+     * Verificações: <br />
+     * 1 - Verifica se foi informada a tag anterior da qual se deseja iniciar a leitura dos hashes; senão <br />
+     * 2 - Verifica se está sendo gerada a versão de release do RC1 do master. Uma vez que no master o RC1 não tem tag anterior (a linha do master fica separada da linha do dev na leitura de tags anteriores, impossibilitando a leitura da tag anterior da forma convencional) <br />
+     * 3 - Busca a tag anterior a tag que está sendo gerada; <br />
+     * 4 - Caso nenhuma busca traga resultado, será gerado o release notes a partir do primeiro commit no repositório.
+     * 
+     * @param currentTagHash
+     *            - Tag da versão que está sendo gerado o release notes;
+     * @return - Hash a partir de onde a versão se inicia, ou seja, de onde os commits serão lidos
+     * @throws IOException
+     */
+    private String findEndCommit(String currentTagHash) throws IOException {
         String previousTag = null;
         if (StringUtils.isNotBlank(settings.getFromTag())) {
             previousTag = settings.getFromTag();
         } else {
-            previousTag = gitService.findPreviousTagFromHash(commit);
+            String tag = settings.getTag().toUpperCase();
+            if (ReleaseType.RELEASE == settings.getReleaseType() && !tag.contains("SP") && tag.contains("RC1")) {
+                String masterHash = gitService.findBranchHash("master");
+                previousTag = gitService.findMostRecentTagFromHash(masterHash);
+            } else {
+                previousTag = gitService.findPreviousTagFromHash(currentTagHash);
+            }
         }
         String previousHash = gitService.findHashFromTag(previousTag);
         String lines[] = previousHash.split("\\r?\\n");
