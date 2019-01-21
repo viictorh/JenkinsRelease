@@ -2,6 +2,8 @@ package br.com.voxage.jenkinsrelease.constant;
 
 import java.util.regex.Pattern;
 
+import org.apache.commons.lang3.StringUtils;
+
 /**
  * 
  * @author victor.bello
@@ -28,7 +30,7 @@ public enum Type implements ReleaseIdentifier {
     TAG {
         @Override
         public ReleaseType releaseType(String value) {
-            if (value == null || value.trim().isEmpty()) {
+            if (StringUtils.isBlank(value)) {
                 return ReleaseType.ALL;
             }
             value = value.toUpperCase();
@@ -43,9 +45,9 @@ public enum Type implements ReleaseIdentifier {
     };
 
     public enum ReleaseType {
-        RELEASE("(?<=ReleaseNotes_).*(RC\\d*)+(?=.html)"),
+        RELEASE("(?<=ReleaseNotes_).*(RC\\d*).*(?=.html)"),
         MASTER("(?<=ReleaseNotes_)((?!SP|RC).)*(?=.html)"),
-        PATCH("(?<=ReleaseNotes_).*(SP\\d*)+(?=.html)"),
+        PATCH("(?<=ReleaseNotes_).*(SP\\d*)((?!RC).)*(?=.html)"),
         ALL("(?<=ReleaseNotes_).*(?=.html)");
 
         private final Pattern PATTERN_VERSION;
